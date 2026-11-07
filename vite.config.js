@@ -28,7 +28,7 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#FFF7E8',
-        theme_color: '#245062',
+        theme_color: '#FFF7E8',
         icons: [
           {
             src: '/icons/yunta-192.png',

@@ -24,6 +24,7 @@ html {
   min-width: 320px;
   min-height: 100%;
   background: var(--color-cream);
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -51,6 +52,7 @@ select {
 
 button {
   color: inherit;
+  touch-action: manipulation;
 }
 
 img,

@@ -72,10 +72,10 @@ export default function App() {
     setPending(queued);
     if (!online) { setPosts([]); return; }
     try {
-      const items = await loadNearby(category);
+      const items = await loadNearby();
       setPosts(items);
     } catch (cause) { setWallError(cause.message || 'No se pudo cargar el muro.'); }
-  }, [category, online, profile, session]);
+  }, [online, profile, session]);
 
   useEffect(() => { refreshWall(); }, [refreshWall]);
 
