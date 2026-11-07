@@ -12,7 +12,7 @@ begin
   if auth.uid() is null or auth.role() <> 'authenticated' then raise exception 'Debes iniciar sesión.'; end if;
   if char_length(trim(p_display_name)) not between 2 and 60 then raise exception 'Revisa tu nombre.'; end if;
   if p_phone_e164 !~ '^\+[1-9][0-9]{7,14}$' then raise exception 'Revisa el número de celular.'; end if;
-  if char_length(trim(p_area_label)) not between 2 and 80 or p_area_label ~* '([0-9#]|(^|[^[:alpha:]])(calle|avenida|av|jr|jiron|jirón|mz|manzana|lote|lt|dpto|depto|departamento|interior|int|piso|nro|numero)([^[:alpha:]]|$))' then raise exception 'Usa solo el nombre aproximado del barrio, sin calle ni número.'; end if;
+  if char_length(trim(p_area_label)) not between 2 and 80 or p_area_label ~* '([0-9#]|(^|[^[:alpha:]])(calle|avenida|av|jr|jiron|jirón|mz|manzana|lote|lt|dpto|depto|departamento|interior|int|piso|nro|numero|pasaje|psje|carretera)([^[:alpha:]]|$))' then raise exception 'Usa solo el nombre aproximado del barrio, sin calle ni número.'; end if;
   if p_latitude not between -90 and 90 or p_longitude not between -180 and 180 then raise exception 'Ubicación inválida.'; end if;
   if p_location_source not in ('gps', 'manual') then raise exception 'Origen de ubicación inválido.'; end if;
   insert into public.profiles(user_id, display_name)
@@ -79,6 +79,18 @@ begin
     'description', p.description, 'coordination_mode', p.coordination_mode,
     'status', p.status, 'area_label', p.area_label, 'created_at', p.created_at,
     'author_id', p.author_id, 'author_name', pr.display_name,
+    'provider_name', case
+      when p.status = 'resolved' and p.coordination_mode = 'individual' and (
+        (auth.uid() = p.author_id and p.type in ('help_request', 'urgent_request'))
+        or (auth.uid() <> p.author_id and p.type not in ('help_request', 'urgent_request')
+          and exists (select 1 from public.post_members rm where rm.post_id = p.id
+            and rm.user_id = auth.uid() and rm.role = 'recipient' and rm.status = 'accepted'))
+      ) then case when p.type in ('help_request', 'urgent_request') then (
+        select provider.display_name from public.post_members pm
+        join public.profiles provider on provider.user_id = pm.user_id
+        where pm.post_id = p.id and pm.role = 'provider' and pm.status = 'accepted'
+      ) else pr.display_name end
+      else null end,
     'distance_m', round(extensions.st_distance(p.location, extensions.st_setsrid(
       extensions.st_makepoint(me.longitude, me.latitude), 4326
     )::extensions.geography) / 10.0)::integer * 10,
@@ -116,7 +128,10 @@ begin
   if v_author is null or auth.role() <> 'authenticated' then raise exception 'Debes iniciar sesión.'; end if;
   if p_title is null or char_length(trim(p_title)) not between 4 and 100 then raise exception 'El título debe tener entre 4 y 100 caracteres.'; end if;
   if p_description is null or char_length(trim(p_description)) not between 8 and 1200 then raise exception 'La descripción debe tener entre 8 y 1200 caracteres.'; end if;
-  if (p_title || ' ' || p_description) ~* '(\+?[0-9][0-9[:space:]().-]{7,}[0-9]|(^|[^[:alpha:]])(calle|avenida|av|jr|jiron|jirón|mz|manzana|lote|lt|dpto|depto|departamento|interior|int|piso|nro|numero)([^[:alpha:]]|$)[^,]{0,24}[0-9])' then
+  if p_area_label is null or char_length(trim(p_area_label)) not between 2 and 80 or p_area_label ~* '([0-9#]|(^|[^[:alpha:]])(calle|avenida|av|jr|jiron|jirón|mz|manzana|lote|lt|dpto|depto|departamento|interior|int|piso|nro|numero|pasaje|psje|carretera)([^[:alpha:]]|$))' then
+    raise exception 'Usa solo el nombre aproximado del barrio, sin calle ni número.';
+  end if;
+  if concat_ws(' ', p_title, p_description) ~* '(\+?[0-9][0-9[:space:]().-]{7,}[0-9]|(^|[^[:alpha:]])(calle|cal|avenida|av|jr|jiron|jirón|mz|manzana|lote|lt|dpto|depto|departamento|interior|int|piso|nro|numero|pasaje|psje|carretera)([^[:alpha:]]|$)[^.!?\n]{0,120}[0-9]{1,5}|(^|[^0-9])[0-9]{1,5}[[:space:]]*,[[:space:]]*(calle|cal|avenida|av|jr|jiron|jirón|pasaje|psje|carretera)([^[:alpha:]]|$))' then
     raise exception 'No publiques celulares ni direcciones exactas; compártelos en el chat.';
   end if;
   if p_latitude not between -90 and 90 or p_longitude not between -180 and 180 then raise exception 'Ubicación inválida.'; end if;

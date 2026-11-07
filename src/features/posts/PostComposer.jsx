@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../../shared/components/Icons';
 import { validCoordinates } from '../../services/location';
-import { containsPrivateContact } from '../../shared/lib/privacy';
+import { containsPrivateContactInFields, isApproximateArea } from '../../shared/lib/privacy';
 
 const types = {
   help: [['help_request', 'Necesito ayuda'], ['help_offer', 'Puedo ayudar']],
@@ -24,10 +24,10 @@ export default function PostComposer({ profile, initialCategory, onClose, onSubm
 
   async function submit(event) {
     event.preventDefault();
-    if (form.title.trim().length < 4 || form.description.trim().length < 8 || !form.area_label.trim()) {
+    if (form.title.trim().length < 4 || form.description.trim().length < 8 || !isApproximateArea(form.area_label)) {
       setError('Completa el título, la descripción y la zona.'); return;
     }
-    if (containsPrivateContact(`${form.title} ${form.description}`)) { setError('No incluyas celulares ni direcciones exactas en el aviso. Compártelos en el chat.'); return; }
+    if (containsPrivateContactInFields(form.title, form.description)) { setError('No incluyas celulares ni direcciones exactas en el aviso. Compártelos en el chat.'); return; }
     if (!validCoordinates(form.latitude, form.longitude)) { setError('Revisa el punto aproximado del aviso.'); return; }
     setBusy(true);
     try {

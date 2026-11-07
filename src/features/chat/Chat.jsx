@@ -2,22 +2,24 @@ import { useEffect, useState } from 'react';
 import { loadMessages, sendMessage, watchMessages } from '../../services/yuntaApi';
 import { Icon } from '../../shared/components/Icons';
 
-export default function Chat({ post, userId }) {
+export default function Chat({ post, userId, online }) {
   const [messages, setMessages] = useState([]);
   const [body, setBody] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const canSend = navigator.onLine && ['open', 'coordinating'].includes(post.status);
+  const canSend = online && ['open', 'coordinating'].includes(post.status);
 
   useEffect(() => {
     let active = true;
+    if (!online) { setError('Conéctate para consultar el chat.'); return () => { active = false; }; }
+    setError('');
+    const stop = watchMessages(post.id, (message) => {
+      setMessages((items) => items.some((item) => item.id === message.id) ? items : [...items, message]);
+    });
     loadMessages(post.id).then((items) => { if (active) setMessages(items); })
       .catch((cause) => { if (active) setError(cause.message); });
-    const stop = navigator.onLine ? watchMessages(post.id, (message) => {
-      setMessages((items) => items.some((item) => item.id === message.id) ? items : [...items, message]);
-    }) : () => {};
     return () => { active = false; stop(); };
-  }, [post.id]);
+  }, [online, post.id]);
 
   async function submit(event) {
     event.preventDefault();

@@ -2,9 +2,9 @@ import { useState } from 'react';
 import Chat from '../chat/Chat';
 import { Icon } from '../../shared/components/Icons';
 import { postTypeLabels, postStatusLabels } from '../../shared/lib/labels';
-import { containsPrivateContact } from '../../shared/lib/privacy';
+import { containsPrivateContactInFields } from '../../shared/lib/privacy';
 
-export default function CaseView({ post, userId, onBack, onRefresh, onToast }) {
+export default function CaseView({ post, userId, onBack, onRefresh, onToast, online }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [score, setScore] = useState(5);
@@ -15,7 +15,7 @@ export default function CaseView({ post, userId, onBack, onRefresh, onToast }) {
   const accepted = post.my_membership === 'accepted' || post.my_membership === 'active';
   const canRate = post.status === 'resolved' && post.coordination_mode === 'individual' && !post.my_rating && (
     (owner && ['help_request', 'urgent_request'].includes(post.type)) || (!owner && accepted && !['help_request', 'urgent_request'].includes(post.type))
-  );
+  ) && Boolean(post.provider_name);
   const canChat = owner ? post.status === 'coordinating' || (post.status === 'resolved' && post.member_count > 0)
     : accepted && post.status !== 'cancelled';
   const ad = post.category === 'products_services';
@@ -34,7 +34,7 @@ export default function CaseView({ post, userId, onBack, onRefresh, onToast }) {
 
   async function edit(event) {
     event.preventDefault();
-    if (containsPrivateContact(`${editForm.title} ${editForm.description}`)) {
+    if (containsPrivateContactInFields(editForm.title, editForm.description)) {
       setError('No incluyas celulares ni direcciones exactas en el anuncio.'); return;
     }
     await action('edit_local_ad', {
@@ -74,7 +74,7 @@ export default function CaseView({ post, userId, onBack, onRefresh, onToast }) {
           </button>
         )}
         {!owner && post.my_membership === 'pending' && <p className="waiting-note">Tu solicitud está pendiente de confirmación por quien publicó el aviso.</p>}
-        {ad && !owner && !post.has_recommended && <button className="text-button recommend-button" disabled={busy} onClick={() => action('recommend_ad')}>Recomendar este anuncio</button>}
+        {ad && !owner && ['open', 'coordinating'].includes(post.status) && !post.has_recommended && <button className="text-button recommend-button" disabled={busy} onClick={() => action('recommend_ad')}>Recomendar este anuncio</button>}
         {ad && post.has_recommended && <p className="field-note">Ya recomendaste este anuncio.</p>}
 
         {owner && ['open', 'coordinating'].includes(post.status) && <div className="case-actions">
@@ -82,6 +82,9 @@ export default function CaseView({ post, userId, onBack, onRefresh, onToast }) {
             <button className="button button-secondary" disabled={busy} onClick={() => action('reopen_post')}>Buscar a otra persona</button>}
           <button className="button button-help" disabled={busy} onClick={() => action('resolve_post')}>Marcar como resuelto</button>
           <button className="text-button danger-text" disabled={busy} onClick={() => action('cancel_post')}>Retirar aviso</button>
+        </div>}
+        {owner && post.coordination_mode === 'individual' && post.status === 'resolved' && <div className="case-actions">
+          <button className="button button-secondary" disabled={busy} onClick={() => action('reopen_post')}>Buscar a otra persona</button>
         </div>}
         {owner && ad && ['open', 'coordinating'].includes(post.status) && <>
           <button className="text-button" onClick={() => setEditing((value) => !value)}>{editing ? 'Cerrar edición' : 'Editar anuncio'}</button>
@@ -93,9 +96,9 @@ export default function CaseView({ post, userId, onBack, onRefresh, onToast }) {
           </form>}
         </>}
 
-        {canChat && <Chat post={post} userId={userId} />}
+        {canChat && <Chat post={post} userId={userId} online={online} />}
         {canRate && <form className="rating-form" onSubmit={rate}>
-          <h2>¿Cómo fue la ayuda?</h2><p>Tu valoración ayuda a que el barrio recomiende con confianza.</p>
+          <h2>Valorar a {post.provider_name}</h2><p>Tu valoración ayuda a que el barrio recomiende con confianza.</p>
           <label>Calificación<select value={score} onChange={(event) => setScore(event.target.value)}>
             <option value="5">5 · Excelente</option><option value="4">4 · Muy bien</option><option value="3">3 · Bien</option><option value="2">2 · Regular</option><option value="1">1 · Mala experiencia</option>
           </select></label>

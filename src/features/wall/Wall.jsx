@@ -22,9 +22,6 @@ export default function Wall({ category, onCategory, posts, pending, error, onRe
     <section className="wall-view">
       <header className="page-heading">
         <div><h1>El muro del barrio</h1><p>Lo que ocurre cerca de ti, a menos de 500 m.</p></div>
-        <button className="button button-primary publish-button" onClick={onPublish}>
-          <Icon name="plus" /> Publicar
-        </button>
       </header>
       <div className="category-tabs" role="tablist" aria-label="Secciones del muro">
         {categories.map((item) => (
@@ -55,9 +52,13 @@ export default function Wall({ category, onCategory, posts, pending, error, onRe
           <span className="empty-icon"><Icon name={active?.icon ?? 'home'} size={25} /></span>
           <h3>El barrio está tranquilo por ahora.</h3>
           <p>Publica lo que necesitas o comparte algo que pueda ayudar a un vecino.</p>
-          <button className="button button-secondary" onClick={onPublish}>Crear el primer aviso</button>
         </div>
       )}
+      <footer className="wall-publish-footer">
+        <button className="button button-primary publish-button" onClick={onPublish}>
+          <Icon name="plus" /> Publicar
+        </button>
+      </footer>
     </section>
   );
 }

@@ -3,11 +3,11 @@ import './app.css';
 import Onboarding from '../features/auth/Onboarding';
 import ProfilePanel from '../features/auth/ProfilePanel';
 import Tutorial from '../features/auth/Tutorial';
-import { getProfile, subscribeToSession } from '../features/auth/auth';
+import { getProfile, saveProfile, subscribeToSession } from '../features/auth/auth';
 import CaseView from '../features/coordination/CaseView';
 import PostComposer from '../features/posts/PostComposer';
 import Wall from '../features/wall/Wall';
-import { listPendingPosts } from '../services/offline/outbox';
+import { getProfileCache, listPendingPosts, saveProfileCache } from '../services/offline/outbox';
 import { isSupabaseConfigured, supabase } from '../services/supabase/client';
 import { loadNearby, loadPost, postAction, syncPendingPosts, createPost } from '../services/yuntaApi';
 import { Icon } from '../shared/components/Icons';
@@ -32,20 +32,22 @@ export default function App() {
     let mounted = true;
     if (!isSupabaseConfigured) { setBooting(false); return undefined; }
     supabase.auth.getSession().then(async ({ data, error }) => {
-      if (error || !mounted) return;
+      if (!mounted) return;
+      if (error) { setWallError(error.message); setBooting(false); return; }
       const current = data.session;
       setSession(current);
       if (current) {
-        try {
-          const savedProfile = await getProfile();
-          if (mounted && savedProfile) {
-            setProfile(savedProfile);
-            setNeedsTutorial(!savedProfile.tutorial_completed_at);
-          }
-        } catch (cause) { if (mounted) setWallError(cause.message); }
+        const savedProfile = await getProfile().catch(() => null);
+        const cachedProfile = savedProfile ? null : await getProfileCache().catch(() => null);
+        const restored = savedProfile ?? cachedProfile;
+        if (mounted && restored) {
+          setProfile(restored);
+          setNeedsTutorial(!restored.tutorial_completed_at);
+          if (savedProfile) saveProfileCache(savedProfile).catch(() => {});
+        } else if (mounted && !savedProfile) setWallError('No se pudo restaurar el perfil. Conéctate para volver a intentarlo.');
       }
       if (mounted) setBooting(false);
-    });
+    }).catch((cause) => { if (mounted) { setWallError(cause.message); setBooting(false); } });
     const { data: authState } = subscribeToSession(setSession);
     return () => { mounted = false; authState.subscription.unsubscribe(); };
   }, []);
@@ -66,12 +68,14 @@ export default function App() {
   const refreshWall = useCallback(async () => {
     if (!profile || !session) return;
     setWallError('');
+    const queued = await listPendingPosts().catch(() => []);
+    setPending(queued);
+    if (!online) { setPosts([]); return; }
     try {
-      const [items, queued] = await Promise.all([loadNearby(category), listPendingPosts()]);
+      const items = await loadNearby(category);
       setPosts(items);
-      setPending(queued);
     } catch (cause) { setWallError(cause.message || 'No se pudo cargar el muro.'); }
-  }, [category, profile, session]);
+  }, [category, online, profile, session]);
 
   useEffect(() => { refreshWall(); }, [refreshWall]);
 
@@ -81,6 +85,25 @@ export default function App() {
       if (count) { showNotice(`${count} ${count === 1 ? 'aviso sincronizado' : 'avisos sincronizados'}.`); await refreshWall(); }
     }).catch(() => {});
   }, [online, refreshWall, session]);
+
+  useEffect(() => {
+    if (!online || !session) return undefined;
+    let active = true;
+    Promise.all([getProfile(), getProfileCache()]).then(async ([remote, cached]) => {
+      if (!remote) return;
+      let fresh = remote;
+      if (cached?.tutorial_completed_at && !remote.tutorial_completed_at) {
+        await saveProfile(remote, true);
+        fresh = { ...remote, tutorial_completed_at: cached.tutorial_completed_at };
+      }
+      if (active) {
+        setProfile(fresh);
+        setNeedsTutorial(!fresh.tutorial_completed_at);
+        await saveProfileCache(fresh);
+      }
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [online, session]);
 
   function showNotice(message) {
     setNotice(message);
@@ -122,7 +145,9 @@ export default function App() {
 
   if (!isSupabaseConfigured) return <ConfigurationNotice />;
   if (booting) return <main className="boot-screen"><img src="/icons/yunta.svg" alt="" /><p>Abriendo Yunta…</p></main>;
-  if (!profile) return <Onboarding onComplete={(saved) => { setProfile(saved); setWallError(''); setNeedsTutorial(true); }} />;
+  if (!profile) return <Onboarding onComplete={(saved) => {
+    setProfile(saved); setWallError(''); setNeedsTutorial(true); saveProfileCache(saved).catch(() => {});
+  }} />;
 
   return (
     <div className="app-shell">
@@ -146,10 +171,10 @@ export default function App() {
           <div className="rail-note">A 500 m<br />de tu zona</div>
         </aside>
         <main className="main-content">
-          {profileView ? <ProfilePanel profile={profile} onBack={() => setProfileView(false)}
-            onSave={setProfile} onToast={showNotice} />
+          {profileView ? <ProfilePanel profile={profile} online={online} onBack={() => setProfileView(false)}
+            onSave={(saved) => { setProfile(saved); saveProfileCache(saved).catch(() => {}); }} onToast={showNotice} />
             : detail ? <CaseView post={detail} userId={session.user.id} onBack={() => setDetail(null)}
-              onRefresh={runAction} onToast={showNotice} />
+              onRefresh={runAction} onToast={showNotice} online={online} />
               : <Wall category={category} onCategory={setCategory} posts={posts} pending={pending}
                 error={wallError} onRefresh={refreshWall} onPublish={() => setComposing(true)} onOpen={openPost} />}
         </main>
@@ -159,7 +184,9 @@ export default function App() {
         <button className={profileView ? 'active' : ''} onClick={() => { setProfileView(true); setDetail(null); }}><Icon name="person" /><span>Perfil</span></button>
       </nav>
       {composing && <PostComposer profile={profile} initialCategory={category} onClose={() => setComposing(false)} onSubmit={createNewPost} />}
-      {needsTutorial && <Tutorial profile={profile} onDone={() => setNeedsTutorial(false)} />}
+      {needsTutorial && <Tutorial profile={profile} onDone={(saved) => {
+        setProfile(saved); setNeedsTutorial(false); saveProfileCache(saved).catch(() => {});
+      }} />}
       {notice && <div className="toast" role="status">{notice}</div>}
     </div>
   );

@@ -54,6 +54,7 @@
 .empty-icon, .tutorial-mark { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 18px; background: #f7dfbc; color: var(--color-petrol); }
 .empty-wall h3 { margin: 20px 0 8px; font-size: 1.18rem; }
 .empty-wall p { margin: 0 0 22px; color: var(--color-petrol-muted); line-height: 1.55; }
+.wall-publish-footer { display: flex; justify-content: center; padding: 24px 0; }
 .sync-banner, .inline-error { display: flex; justify-content: space-between; gap: 12px; margin: 12px 0; padding: 12px 14px; border: 1px solid #e7c694; border-radius: 12px; background: #fff2d9; color: #594420; font-size: .87rem; }
 .inline-error, .form-error { border-color: #dab4ae; background: #fff0ed; color: #80343a; }
 .form-stack { display: grid; gap: 15px; }
@@ -156,7 +157,8 @@ input:focus, textarea:focus, select:focus { border-color: var(--color-petrol-str
   .page-heading { align-items: flex-start; margin-bottom: 20px; }
   .page-heading h1 { font-size: 1.5rem; }
   .page-heading p { max-width: 24ch; font-size: .83rem; line-height: 1.45; }
-  .publish-button { min-height: 42px; padding: 0 12px; font-size: .83rem; }
+  .wall-publish-footer { position: fixed; z-index: 4; right: 0; bottom: calc(62px + env(safe-area-inset-bottom)); left: 0; justify-content: center; padding: 12px 18px; pointer-events: none; }
+  .wall-publish-footer .publish-button { width: min(100%, 420px); pointer-events: auto; box-shadow: 0 8px 24px #1637432b; }
   .category-tabs { gap: 5px; margin-right: -16px; padding-right: 16px; }
   .category-tab { min-height: 42px; padding: 0 11px; font-size: .81rem; }
   .post-list { grid-template-columns: 1fr; gap: 10px; }

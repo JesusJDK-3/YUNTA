@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ensureSession, saveProfile } from './auth';
 import { currentLocation, validCoordinates } from '../../services/location';
 import { Icon } from '../../shared/components/Icons';
+import { isApproximateArea } from '../../shared/lib/privacy';
 
 const initial = { display_name: '', phone: '', area_label: '', latitude: '', longitude: '', location_source: 'manual' };
 
@@ -36,6 +37,8 @@ export default function Onboarding({ onComplete, initialProfile }) {
       setError('Completa tu nombre, zona y un punto válido del mapa.');
       return;
     }
+    if (form.display_name.trim().length < 2) { setError('El nombre visible debe tener al menos 2 caracteres.'); return; }
+    if (!isApproximateArea(form.area_label)) { setError('Escribe solo el nombre del barrio, sin calles ni números.'); return; }
     if (!/^\+51[0-9]{9}$/.test(phone)) { setError('Escribe un celular peruano de 9 dígitos.'); return; }
     setBusy(true);
     try {
@@ -65,7 +68,7 @@ export default function Onboarding({ onComplete, initialProfile }) {
             required placeholder="987 654 321" /></label>
           <p className="field-note">Solo se guarda de forma privada. La demo no envía SMS.</p>
           <label>Tu barrio o zona<input maxLength="80" pattern="[^0-9#]*" value={form.area_label}
-            onChange={(event) => update('area_label', event.target.value)} required placeholder="Ej. Santa Beatriz" /></label>
+            onChange={(event) => update('area_label', event.target.value)} required placeholder="Nombre de tu barrio" /></label>
           <p className="field-note">Escribe solo el nombre del barrio, sin calles, números ni direcciones.</p>
           <div className="location-actions">
             <button type="button" className="button button-secondary" onClick={useGps} disabled={locating}>
@@ -74,8 +77,8 @@ export default function Onboarding({ onComplete, initialProfile }) {
             <span>{form.location_source === 'gps' ? 'Ubicación aproximada guardada' : 'Marca un punto aproximado'}</span>
           </div>
           <div className="coordinate-fields">
-            <label>Latitud<input inputMode="decimal" value={form.latitude} onChange={(event) => update('latitude', event.target.value)} required placeholder="-12.0464" /></label>
-            <label>Longitud<input inputMode="decimal" value={form.longitude} onChange={(event) => update('longitude', event.target.value)} required placeholder="-77.0428" /></label>
+            <label>Latitud<input inputMode="decimal" value={form.latitude} onChange={(event) => update('latitude', event.target.value)} required /></label>
+            <label>Longitud<input inputMode="decimal" value={form.longitude} onChange={(event) => update('longitude', event.target.value)} required /></label>
           </div>
           <p className="field-note">Puedes usar GPS o introducir coordenadas aproximadas. Tu punto exacto es privado.</p>
           {error && <p className="form-error" role="alert">{error}</p>}

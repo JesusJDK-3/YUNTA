@@ -15,7 +15,10 @@ export default function Tutorial({ profile, onDone }) {
 
   async function finish() {
     setBusy(true);
-    try { await saveProfile(profile, true); onDone(); }
+    try {
+      if (navigator.onLine) await saveProfile(profile, true);
+      onDone({ ...profile, tutorial_completed_at: new Date().toISOString() });
+    }
     catch (cause) { setError(cause.message || 'No se pudo guardar el tutorial.'); }
     finally { setBusy(false); }
   }

@@ -64,9 +64,9 @@ export async function postAction(name, args) {
 
 export async function loadMessages(postId) {
   const { data, error } = await supabase.from('messages').select('id, sender_id, body, created_at')
-    .eq('post_id', postId).order('created_at', { ascending: true }).limit(200);
+    .eq('post_id', postId).order('created_at', { ascending: false }).limit(200);
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).reverse();
 }
 
 export async function sendMessage(postId, senderId, body) {

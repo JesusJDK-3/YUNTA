@@ -57,16 +57,18 @@ create or replace function public.edit_local_ad(
 )
 returns void language plpgsql security definer set search_path = '' as $$
 begin
-  if (p_title || ' ' || p_description) ~* '(\+?[0-9][0-9[:space:]().-]{7,}[0-9]|(^|[^[:alpha:]])(calle|avenida|av|jr|jiron|jirón|mz|manzana|lote|lt|dpto|depto|departamento|interior|int|piso|nro|numero)([^[:alpha:]]|$)[^,]{0,24}[0-9])' then
+  if p_title is null or char_length(trim(p_title)) not between 4 and 100 then raise exception 'Revisa el título.'; end if;
+  if p_description is null or char_length(trim(p_description)) not between 8 and 1200 then raise exception 'Revisa la descripción.'; end if;
+  if p_area_label is null or char_length(trim(p_area_label)) not between 2 and 80 or p_area_label ~* '([0-9#]|(^|[^[:alpha:]])(calle|avenida|av|jr|jiron|jirón|mz|manzana|lote|lt|dpto|depto|departamento|interior|int|piso|nro|numero|pasaje|psje|carretera)([^[:alpha:]]|$))' then
+    raise exception 'Usa solo el nombre aproximado del barrio, sin calle ni número.';
+  end if;
+  if concat_ws(' ', p_title, p_description) ~* '(\+?[0-9][0-9[:space:]().-]{7,}[0-9]|(^|[^[:alpha:]])(calle|cal|avenida|av|jr|jiron|jirón|mz|manzana|lote|lt|dpto|depto|departamento|interior|int|piso|nro|numero|pasaje|psje|carretera)([^[:alpha:]]|$)[^.!?\n]{0,120}[0-9]{1,5}|(^|[^0-9])[0-9]{1,5}[[:space:]]*,[[:space:]]*(calle|cal|avenida|av|jr|jiron|jirón|pasaje|psje|carretera)([^[:alpha:]]|$))' then
     raise exception 'No publiques celulares ni direcciones exactas; compártelos en el chat.';
   end if;
   update public.posts set title = trim(p_title), description = trim(p_description),
     area_label = trim(p_area_label), updated_at = now()
   where id = p_post_id and author_id = auth.uid() and category = 'products_services'
-    and status in ('open', 'coordinating')
-    and char_length(trim(p_title)) between 4 and 100
-    and char_length(trim(p_description)) between 8 and 1200
-    and char_length(trim(p_area_label)) between 2 and 80;
+    and status in ('open', 'coordinating');
   if not found then raise exception 'No se pudo editar el anuncio.'; end if;
 end;
 $$;
