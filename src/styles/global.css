@@ -1,18 +1,19 @@
 :root {
   font-family: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #245062;
-  background: #fff7e8;
+  background: #ffffff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --color-cream: #fff7e8;
+  --color-white: #ffffff;
+  --color-sun: #f3d76f;
+  --color-sun-hover: #ebcb5c;
+  --color-sun-soft: #fff3c5;
   --color-petrol: #245062;
   --color-petrol-strong: #1b5c76;
   --color-petrol-muted: #56717b;
-  --color-peach: #f2b476;
-  --color-peach-strong: #f6a754;
   --color-emergency: #a13d42;
 }
 
@@ -23,7 +24,7 @@
 html {
   min-width: 320px;
   min-height: 100%;
-  background: var(--color-cream);
+  background: var(--color-white);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -34,14 +35,14 @@ body {
   margin: 0;
 }
 
-::selection { background: #f6a754; color: #173f50; }
+::selection { background: var(--color-sun-soft); color: #173f50; }
 
 ::-webkit-scrollbar { width: 11px; height: 11px; }
-::-webkit-scrollbar-track { background: #f6eedf; }
-::-webkit-scrollbar-thumb { border: 3px solid #f6eedf; border-radius: 9px; background: #9aaeb0; }
+::-webkit-scrollbar-track { background: #f3f6f5; }
+::-webkit-scrollbar-thumb { border: 3px solid #f3f6f5; border-radius: 9px; background: #9aaeb0; }
 ::-webkit-scrollbar-thumb:hover { background: #6d898d; }
 
-html { scrollbar-color: #9aaeb0 #f6eedf; }
+html { scrollbar-color: #9aaeb0 #f3f6f5; }
 
 button,
 input,
@@ -61,6 +62,6 @@ svg {
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-peach-strong);
+  outline: 3px solid #c59d22;
   outline-offset: 3px;
 }

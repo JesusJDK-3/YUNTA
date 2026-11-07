@@ -41,7 +41,7 @@ Yunta organizes neighborhood help around approximate location and gives each cas
 
 ## Brand Commitments
 
-The product name is Yunta. The supplied Word document defines the initial visual palette and interaction guidance, recorded separately in `docs/ESPECIFICACION.md`. No approved logo file was supplied; the current SVG and PNG marks are provisional project assets.
+The product name is Yunta. Its existing Y mark is a brand commitment and must not be replaced by a heart. The Word document defines the original palette; the user later approved a white background, soft sunny-yellow primary actions, and restrained liquid motion, recorded in `docs/ESPECIFICACION.md`.
 
 ## Evidence on Hand
 

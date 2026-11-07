@@ -97,7 +97,7 @@ En un caso individual deben distinguirse receptor y proveedor por separado del a
 - Quien recibió la ayuda o servicio califica a quien lo prestó; esa persona no necesariamente es el autor del aviso.
 - No guardar teléfono, coordenadas exactas, contenido de mensajes ni datos de perfil en la caché pública del service worker.
 
-## Diseño visual
+## Diseño visual original del Word
 
 | Color | HEX | Aplicación |
 | --- | --- | --- |
@@ -108,4 +108,13 @@ En un caso individual deben distinguirse receptor y proveedor por separado del a
 | Azul petróleo vivo | `#1B5C76` | Botón Puedo ayudar y pestaña activa. |
 | Rojo ladrillo suave | `#A13D42` | Etiqueta Emergencia con ícono. |
 
-La referencia visual principal es [Campsite en Refero](https://styles.refero.design/style/5d8ad116-b3d8-4890-a969-5b856b35c678): fondo crema, controles redondeados y acentos puntuales. Usar Inter, tarjetas de 16 px de radio, sombras suaves y componentes consistentes entre vistas. El contenido del muro debe leerse de un vistazo, por ejemplo: «Necesito una muleta · A 240 m · Abierto». En el chat, mensajes propios usan azul petróleo con texto crema; mensajes del vecino, crema con borde azul.
+La referencia visual original es [Campsite en Refero](https://styles.refero.design/style/5d8ad116-b3d8-4890-a969-5b856b35c678). Su paleta crema y durazno fue reemplazada para la interfaz vigente por la decisión del usuario siguiente; los requisitos funcionales del Word siguen vigentes.
+
+## Actualización visual aprobada el 7 de noviembre de 2026
+
+- Usar blanco `#FFFFFF` como fondo principal de la PWA.
+- Conservar azul petróleo para texto e identidad; mantener el logotipo actual con la letra Y, sin sustituirlo por un corazón.
+- Usar amarillo alegre y suave `#F3D76F` para acciones principales, con texto azul petróleo y hover `#EBCB5C`.
+- Reservar amarillo pálido `#FFF3C5` para resaltados pequeños. Mantener rojo ladrillo para emergencias y verde para estados reales.
+- Dar movimiento ambiental lento solo a formas decorativas detrás del encabezado. No mover texto ni datos; respetar `prefers-reduced-motion`.
+- Conservar tarjetas legibles, con superficies blancas, bordes suaves y controles aptos para móvil.
