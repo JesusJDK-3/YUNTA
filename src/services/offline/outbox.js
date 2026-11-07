@@ -52,7 +52,7 @@ export function removePendingPost(id) {
 
 export function saveProfileCache(profile) {
   const safeProfile = {
-    id: 'current', display_name: profile.display_name, area_label: profile.area_label,
+    id: 'current', display_name: profile.display_name,
     latitude: Number(Number(profile.latitude).toFixed(3)), longitude: Number(Number(profile.longitude).toFixed(3)),
     location_source: profile.location_source,
     tutorial_completed_at: profile.tutorial_completed_at ?? null,
@@ -63,6 +63,9 @@ export function saveProfileCache(profile) {
 export async function getProfileCache() {
   const profile = await runTransaction(PROFILE_STORE, 'readonly', (store) => store.get('current'));
   if (!profile) return null;
-  const { id, ...safeProfile } = profile;
+  const { id, area_label, ...safeProfile } = profile;
+  if (area_label !== undefined) {
+    await runTransaction(PROFILE_STORE, 'readwrite', (store) => store.put({ id, ...safeProfile }));
+  }
   return safeProfile;
 }

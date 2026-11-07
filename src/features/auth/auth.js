@@ -15,7 +15,6 @@ export async function saveProfile(profile, tutorialCompleted = false) {
   const { error } = await supabase.rpc('save_my_profile', {
     p_display_name: profile.display_name.trim(),
     p_phone_e164: profile.phone_e164,
-    p_area_label: profile.area_label,
     p_latitude: Number(profile.latitude),
     p_longitude: Number(profile.longitude),
     p_location_source: profile.location_source,

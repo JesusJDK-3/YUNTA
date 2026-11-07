@@ -13,7 +13,7 @@ Cada barrio cuenta con un muro de publicaciones. El vecino puede pedir u ofrecer
 ### Registro y zona
 
 - Solicitar nombre visible y número de celular real. Validar el formato; el número es privado y el SMS está deshabilitado durante la demo.
-- Sugerir la zona mediante GPS. El vecino puede confirmar su barrio o elegirlo manualmente; para el ingreso manual puede marcar un punto aproximado.
+- Solicitar la ubicación con GPS o permitir marcar un punto aproximado en el mapa. El registro no solicita ni guarda un nombre de barrio; las categorías clasifican las publicaciones y la distancia se calcula con la ubicación.
 - Mostrar un tutorial breve al entrar por primera vez, con instrucciones para publicar y sumarse a un caso.
 - Crear una sesión de Supabase por navegador. La sesión identifica al vecino.
 

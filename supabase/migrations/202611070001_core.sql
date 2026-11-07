@@ -11,7 +11,6 @@ create table if not exists public.private_profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   phone_e164 text not null check (phone_e164 ~ '^\+[1-9][0-9]{7,14}$'),
   phone_verified_at timestamptz,
-  area_label text not null check (char_length(area_label) between 2 and 80 and area_label !~* '([0-9#]|(^|[^[:alpha:]])(calle|cal|avenida|av|jr|jiron|jirón|mz|manzana|lote|lt|dpto|depto|departamento|interior|int|piso|nro|numero|pasaje|psje|carretera|camino[[:space:]]+real)([^[:alpha:]]|$))'),
   latitude double precision not null check (latitude between -90 and 90),
   longitude double precision not null check (longitude between -180 and 180),
   location_source text not null check (location_source in ('gps', 'manual')),

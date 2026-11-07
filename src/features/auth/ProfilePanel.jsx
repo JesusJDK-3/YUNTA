@@ -1,19 +1,18 @@
 import { useEffect, useState } from 'react';
 import { saveProfile } from './auth';
 import { Icon } from '../../shared/components/Icons';
-import { isApproximateArea } from '../../shared/lib/privacy';
 
 export default function ProfilePanel({ profile, online, onBack, onSave, onToast }) {
   const [form, setForm] = useState({
     display_name: profile.display_name, phone: profile.phone_e164?.replace('+51', '') ?? '',
-    area_label: profile.area_label, latitude: profile.latitude, longitude: profile.longitude,
+    latitude: profile.latitude, longitude: profile.longitude,
     location_source: profile.location_source,
   });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   useEffect(() => setForm({
     display_name: profile.display_name, phone: profile.phone_e164?.replace('+51', '') ?? '',
-    area_label: profile.area_label, latitude: profile.latitude, longitude: profile.longitude,
+    latitude: profile.latitude, longitude: profile.longitude,
     location_source: profile.location_source,
   }), [profile]);
   function update(key, value) { setForm((current) => ({ ...current, [key]: value })); }
@@ -21,9 +20,7 @@ export default function ProfilePanel({ profile, online, onBack, onSave, onToast 
   async function submit(event) {
     event.preventDefault();
     const profileData = { ...form, phone_e164: `+51${form.phone.replace(/\D/g, '')}` };
-    if (form.display_name.trim().length < 2 || !isApproximateArea(form.area_label)) {
-      setError('Revisa tu nombre y escribe solo el nombre aproximado del barrio.'); return;
-    }
+    if (form.display_name.trim().length < 2) { setError('Revisa tu nombre visible.'); return; }
     if (!/^\+51[0-9]{9}$/.test(profileData.phone_e164)) { setError('Escribe un celular peruano de 9 dígitos.'); return; }
     setBusy(true);
     try {
@@ -46,7 +43,6 @@ export default function ProfilePanel({ profile, online, onBack, onSave, onToast 
         <label>Nombre visible<input maxLength="60" value={form.display_name} onChange={(event) => update('display_name', event.target.value)} required disabled={!online} /></label>
         <label>Celular<input inputMode="numeric" maxLength="9" value={form.phone} onChange={(event) => update('phone', event.target.value.replace(/\D/g, '').slice(0, 9))} required disabled={!online} /></label>
         <p className="field-note">El número es privado. La demo no verifica por SMS ni lo comparte con vecinos.</p>
-        <label>Tu barrio<input maxLength="80" pattern="[^0-9#]*" value={form.area_label} onChange={(event) => update('area_label', event.target.value)} required disabled={!online} /></label>
         <div className="coordinate-fields">
           <label>Latitud<input inputMode="decimal" value={form.latitude} onChange={(event) => update('latitude', event.target.value)} required disabled={!online} /></label>
           <label>Longitud<input inputMode="decimal" value={form.longitude} onChange={(event) => update('longitude', event.target.value)} required disabled={!online} /></label>
