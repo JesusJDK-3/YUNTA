@@ -17,6 +17,7 @@ export default function Onboarding({ onComplete, initialProfile }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [manualLocation, setManualLocation] = useState(false);
 
   function update(key, value) { setForm((current) => ({ ...current, [key]: value })); }
 
@@ -25,6 +26,7 @@ export default function Onboarding({ onComplete, initialProfile }) {
     try {
       const point = await currentLocation();
       setForm((current) => ({ ...current, ...point, location_source: 'gps' }));
+      setManualLocation(false);
       setError('');
     } catch (cause) { setError(cause.message); }
     finally { setLocating(false); }
@@ -58,36 +60,36 @@ export default function Onboarding({ onComplete, initialProfile }) {
     <main className="welcome-screen">
       <img className="welcome-logo" src="/icons/yunta.svg" alt="" />
       <section className="welcome-card">
-        <h1>El barrio se ayuda en Yunta.</h1>
-        <p>Encuentra apoyo, ofrece lo que sabes y coordina con vecinos cerca de ti.</p>
+        <h1 className="sr-only">Registro en Yunta</h1>
         <form className="form-stack" onSubmit={submit}>
-          <label>¿Cómo te llamas?<input autoComplete="name" maxLength="60" value={form.display_name}
-            onChange={(event) => update('display_name', event.target.value)} required placeholder="Nombre visible" /></label>
+          <div className="form-stack">
+            <label>Ubicación<input maxLength="80" pattern="[^0-9#]*" value={form.area_label}
+              onChange={(event) => update('area_label', event.target.value)} required placeholder="Nombre de tu barrio" /></label>
+            <div className="location-actions">
+              <button type="button" className="button button-secondary" onClick={useGps} disabled={locating}>
+                <Icon name="pin" /> {locating ? 'Buscando…' : 'Usar mi ubicación actual'}
+              </button>
+              <span>{form.location_source === 'gps' ? 'Ubicación actual lista' : 'Selecciona tu ubicación'}</span>
+            </div>
+            <button type="button" className="text-button" onClick={() => setManualLocation((value) => !value)}>
+              {manualLocation ? 'Ocultar coordenadas' : 'Ingresar coordenadas manualmente'}
+            </button>
+            {manualLocation && <div className="coordinate-fields">
+              <label>Latitud<input inputMode="decimal" value={form.latitude} onChange={(event) => update('latitude', event.target.value)} required /></label>
+              <label>Longitud<input inputMode="decimal" value={form.longitude} onChange={(event) => update('longitude', event.target.value)} required /></label>
+            </div>}
+          </div>
           <label>Celular peruano<input inputMode="numeric" autoComplete="tel-national" maxLength="9"
             value={form.phone} onChange={(event) => update('phone', event.target.value.replace(/\D/g, '').slice(0, 9))}
-            required placeholder="987 654 321" /></label>
-          <p className="field-note">Solo se guarda de forma privada. La demo no envía SMS.</p>
-          <label>Tu barrio o zona<input maxLength="80" pattern="[^0-9#]*" value={form.area_label}
-            onChange={(event) => update('area_label', event.target.value)} required placeholder="Nombre de tu barrio" /></label>
-          <p className="field-note">Escribe solo el nombre del barrio, sin calles, números ni direcciones.</p>
-          <div className="location-actions">
-            <button type="button" className="button button-secondary" onClick={useGps} disabled={locating}>
-              <Icon name="pin" /> {locating ? 'Buscando…' : 'Usar GPS'}
-            </button>
-            <span>{form.location_source === 'gps' ? 'Ubicación aproximada guardada' : 'Marca un punto aproximado'}</span>
-          </div>
-          <div className="coordinate-fields">
-            <label>Latitud<input inputMode="decimal" value={form.latitude} onChange={(event) => update('latitude', event.target.value)} required /></label>
-            <label>Longitud<input inputMode="decimal" value={form.longitude} onChange={(event) => update('longitude', event.target.value)} required /></label>
-          </div>
-          <p className="field-note">Puedes usar GPS o introducir coordenadas aproximadas. Tu punto exacto es privado.</p>
+            required /></label>
+          <label>Nombre visible<input autoComplete="name" maxLength="60" value={form.display_name}
+            onChange={(event) => update('display_name', event.target.value)} required placeholder="Tu nombre" /></label>
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="button button-primary button-wide" disabled={busy}>
             {busy ? 'Guardando…' : 'Entrar al barrio'}
           </button>
         </form>
       </section>
-      <p className="privacy-note">La ubicación exacta y el celular solo los ves tú.</p>
     </main>
   );
 }
