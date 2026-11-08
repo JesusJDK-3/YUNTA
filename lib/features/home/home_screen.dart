@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -5,6 +7,7 @@ import '../../core/theme/yunta_theme.dart';
 import '../../shared/widgets/yunta_wordmark.dart';
 import '../auth/profile_repository.dart';
 import '../notifications/notification_bell.dart';
+import '../notifications/push_notification_service.dart';
 import '../posts/post_card.dart';
 import '../posts/post_catalog.dart';
 import '../posts/post_composer_screen.dart';
@@ -21,7 +24,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   late final PostRepository _postsRepository;
   final List<Map<String, dynamic>> _posts = [];
   PostCategory _category = PostCategory.help;
@@ -31,8 +34,23 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(PushNotificationService.instance.initializeForCurrentUser());
     _postsRepository = PostRepository(Supabase.instance.client);
     _loadPosts();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(PushNotificationService.instance.refreshAfterResume());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   Future<void> _loadPosts({bool showLoader = false}) async {

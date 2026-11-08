@@ -5,7 +5,9 @@ import '../core/theme/yunta_theme.dart';
 import '../features/auth/registration_screen.dart';
 import '../features/auth/profile_repository.dart';
 import '../features/home/home_screen.dart';
+import '../features/notifications/notification_inbox_screen.dart';
 import '../shared/widgets/yunta_wordmark.dart';
+import 'yunta_navigation.dart';
 
 class YuntaApp extends StatelessWidget {
   const YuntaApp({required this.supabaseConfigured, super.key});
@@ -14,9 +16,12 @@ class YuntaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    navigatorKey: yuntaNavigatorKey,
+    scaffoldMessengerKey: yuntaMessengerKey,
     title: 'Yunta',
     debugShowCheckedModeBanner: false,
     theme: YuntaTheme.light,
+    routes: {'/notifications': (_) => const NotificationInboxScreen()},
     home: supabaseConfigured
         ? const SessionGate()
         : const ConfigurationScreen(),
