@@ -110,11 +110,20 @@ En un caso individual deben distinguirse receptor y proveedor por separado del a
 
 La referencia visual original es [Campsite en Refero](https://styles.refero.design/style/5d8ad116-b3d8-4890-a969-5b856b35c678). Su paleta crema y durazno fue reemplazada para la interfaz vigente por la decisión del usuario siguiente; los requisitos funcionales del Word siguen vigentes.
 
-## Actualización visual aprobada el 7 de noviembre de 2026
+## Dirección visual anterior (sustituida el 8 de noviembre de 2026)
 
 - Usar blanco `#FFFFFF` como fondo principal de la app Android.
 - Conservar azul petróleo para texto e identidad; mantener el logotipo actual con la letra Y, sin sustituirlo por un corazón.
 - Usar amarillo alegre y suave `#F3D76F` para acciones principales, con texto azul petróleo y hover `#EBCB5C`.
 - Reservar amarillo pálido `#FFF3C5` para resaltados pequeños. Mantener rojo ladrillo para emergencias y verde para estados reales.
-- Dar movimiento ambiental lento solo a formas decorativas detrás del encabezado. No mover texto ni datos; respetar `prefers-reduced-motion`.
+- Dar movimiento ambiental lento solo a formas decorativas detrás del encabezado. No mover texto ni datos; respetar la preferencia del sistema Android de reducir animaciones.
 - Conservar tarjetas legibles, con superficies blancas, bordes suaves y controles aptos para móvil.
+
+## Dirección visual vigente aprobada el 8 de noviembre de 2026
+
+- Aplicar a Flutter el sistema “Vecindad Conectada” del paquete Stitch: fondo claro azulado `#F4FAFF`, tarjetas casi blancas, tinta petróleo y acentos turquesa/menta.
+- Usar `#006971` para controles y estados seleccionados. Las acciones turquesa `#05A8B5` llevan texto oscuro para conservar contraste; el cian brillante queda para acentos breves.
+- Mantener el logotipo Y existente. El rojo ladrillo identifica emergencias y errores; el verde identifica estados reales de disponibilidad o finalización.
+- Usar tarjetas claras con esquinas suaves, separación generosa y componentes Material 3. No añadir navegación, datos ni acciones que no existan en la app.
+- El prototipo Stitch es solo referencia visual: no copiar sus nombres, avisos, fotos, mapas, barrios, reputaciones ni contenido de muestra como datos del producto.
+- Mantener ubicación GPS real o punto elegido en mapa, radio de 500 m, privacidad de coordenadas y teléfono, y todas las funciones Supabase actuales.

@@ -117,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         onPressed: _publish,
         icon: const Icon(Icons.add_rounded),
         label: const Text('Publicar'),
-        backgroundColor: YuntaColors.yellow,
+        backgroundColor: YuntaColors.action,
         foregroundColor: YuntaColors.inkStrong,
       ),
       body: SafeArea(
@@ -194,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             label: 'Perfil de ${widget.profile.displayName}',
             child: CircleAvatar(
               radius: 24,
-              backgroundColor: YuntaColors.yellow,
+              backgroundColor: YuntaColors.surfaceMintStrong,
               child: Text(
                 widget.profile.displayName.characters.first.toUpperCase(),
                 style: const TextStyle(
@@ -217,12 +217,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         for (final category in PostCategory.values) ...[
           ChoiceChip(
             selected: _category == category,
+            selectedColor: category == PostCategory.emergency
+                ? YuntaColors.dangerSoft
+                : YuntaColors.primary,
+            checkmarkColor: category == PostCategory.emergency
+                ? YuntaColors.danger
+                : Colors.white,
+            labelStyle: TextStyle(
+              color: _category == category
+                  ? category == PostCategory.emergency
+                        ? YuntaColors.danger
+                        : Colors.white
+                  : YuntaColors.ink,
+              fontWeight: FontWeight.w600,
+            ),
             avatar: Icon(
               category.icon,
               size: 19,
               color: category == PostCategory.emergency
                   ? YuntaColors.danger
-                  : YuntaColors.ink,
+                  : _category == category
+                  ? Colors.white
+                  : YuntaColors.primary,
             ),
             label: Text(category.label),
             onSelected: (_) => setState(() => _category = category),
@@ -262,16 +278,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     ],
   );
 
-  Widget _emptyState(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 34, horizontal: 10),
+  Widget _emptyState(BuildContext context) => Container(
+    margin: const EdgeInsets.only(top: 8),
+    padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+    decoration: BoxDecoration(
+      color: YuntaColors.surfaceWhite,
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .6)),
+    ),
     child: Column(
       children: [
-        Icon(
-          _category.icon,
-          size: 42,
-          color: YuntaColors.ink.withValues(alpha: .65),
+        Container(
+          width: 60,
+          height: 60,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: YuntaColors.surfaceBlue,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(_category.icon, size: 30, color: YuntaColors.primary),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
         Text(
           'Aún no hay avisos de ${_category.label.toLowerCase()} cerca.',
           textAlign: TextAlign.center,
@@ -294,7 +321,8 @@ class _RadiusPill extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
     decoration: BoxDecoration(
-      border: Border.all(color: YuntaColors.outline, width: 1.4),
+      color: YuntaColors.surfaceMint,
+      border: Border.all(color: YuntaColors.outlineSoft),
       borderRadius: BorderRadius.circular(28),
     ),
     child: const Row(

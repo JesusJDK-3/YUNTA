@@ -198,9 +198,16 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
                   label: const Text('Confirmar o cambiar en el mapa'),
                 ),
                 const SizedBox(height: 7),
-                const Text(
-                  'El muro solo mostrará una distancia aproximada. No agregues '
-                  'tu dirección exacta al texto.',
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: YuntaColors.surfaceBlue,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Text(
+                    'El muro solo mostrará una distancia aproximada. No agregues '
+                    'tu dirección exacta al texto.',
+                  ),
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 16),
@@ -228,37 +235,45 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
     ),
   );
 
-  Widget _typeHeading(BuildContext context) => Row(
-    children: [
-      Icon(
-        widget.type.icon,
-        size: 28,
-        color: _emergency ? YuntaColors.danger : YuntaColors.ink,
-      ),
-      const SizedBox(width: 10),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.type.category.label,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            Text(
-              widget.type.publishLabel ?? widget.type.label,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
+  Widget _typeHeading(BuildContext context) => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: YuntaColors.surfaceWhite,
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .6)),
+    ),
+    child: Row(
+      children: [
+        Icon(
+          widget.type.icon,
+          size: 28,
+          color: _emergency ? YuntaColors.danger : YuntaColors.primary,
         ),
-      ),
-      if (_emergency)
-        const Chip(
-          label: Text('Emergencia'),
-          avatar: Icon(Icons.warning_amber_rounded, size: 18),
-          backgroundColor: Color(0xFFFFE8E5),
-          labelStyle: TextStyle(color: YuntaColors.danger),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.type.category.label,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              Text(
+                widget.type.publishLabel ?? widget.type.label,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+          ),
         ),
-    ],
+        if (_emergency)
+          const Chip(
+            label: Text('Emergencia'),
+            avatar: Icon(Icons.warning_amber_rounded, size: 18),
+            backgroundColor: YuntaColors.dangerSoft,
+            labelStyle: TextStyle(color: YuntaColors.danger),
+          ),
+      ],
+    ),
   );
 
   bool _containsPhone(String text) =>

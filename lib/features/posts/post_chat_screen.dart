@@ -208,10 +208,16 @@ class _MessageBubble extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 9),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: mine ? YuntaColors.yellowPale : const Color(0xFFF1F5F6),
+        color: mine ? YuntaColors.action : YuntaColors.surfaceWhite,
         borderRadius: BorderRadius.circular(17),
+        border: mine
+            ? null
+            : Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .55)),
       ),
-      child: Text(body),
+      child: Text(
+        body,
+        style: TextStyle(color: mine ? YuntaColors.inkStrong : YuntaColors.ink),
+      ),
     ),
   );
 }

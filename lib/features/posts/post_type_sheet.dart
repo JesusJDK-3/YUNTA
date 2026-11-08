@@ -7,7 +7,7 @@ Future<PostTypeDefinition?> showPostTypeSheet(BuildContext context) =>
     showModalBottomSheet<PostTypeDefinition>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: YuntaColors.canvas,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -32,7 +32,7 @@ class _PostTypeSheet extends StatelessWidget {
               width: 38,
               height: 4,
               decoration: BoxDecoration(
-                color: YuntaColors.outline,
+                color: YuntaColors.outlineSoft,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -77,7 +77,7 @@ class _CategoryHeading extends StatelessWidget {
           size: 19,
           color: category == PostCategory.emergency
               ? YuntaColors.danger
-              : YuntaColors.ink,
+              : YuntaColors.primary,
         ),
         const SizedBox(width: 8),
         Text(category.label, style: Theme.of(context).textTheme.titleMedium),
@@ -95,10 +95,24 @@ class _TypeOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final emergency = type.category == PostCategory.emergency;
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-      leading: Icon(
-        type.icon,
-        color: emergency ? YuntaColors.danger : YuntaColors.ink,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+      tileColor: YuntaColors.surfaceWhite,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: YuntaColors.outlineSoft.withValues(alpha: .55)),
+      ),
+      leading: Container(
+        width: 44,
+        height: 44,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: emergency ? YuntaColors.dangerSoft : YuntaColors.surfaceBlue,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Icon(
+          type.icon,
+          color: emergency ? YuntaColors.danger : YuntaColors.primary,
+        ),
       ),
       title: Text(type.publishLabel ?? type.label),
       trailing: const Icon(Icons.chevron_right),

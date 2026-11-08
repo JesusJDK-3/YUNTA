@@ -31,21 +31,21 @@ class PostCard extends StatelessWidget {
 
     return Card(
       margin: EdgeInsets.zero,
-      color: Colors.white,
-      surfaceTintColor: Colors.white,
+      color: YuntaColors.surfaceWhite,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         side: BorderSide(
           color: emergency
-              ? YuntaColors.danger.withValues(alpha: .55)
-              : YuntaColors.outline,
-          width: 1.2,
+              ? YuntaColors.danger.withValues(alpha: .5)
+              : YuntaColors.outlineSoft,
+          width: 1,
         ),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -57,13 +57,13 @@ class PostCard extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: emergency
-                      ? const Color(0xFFFFE8E5)
-                      : YuntaColors.yellowPale,
+                      ? YuntaColors.dangerSoft
+                      : YuntaColors.surfaceBlue,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   type?.icon ?? Icons.campaign_outlined,
-                  color: emergency ? YuntaColors.danger : YuntaColors.ink,
+                  color: emergency ? YuntaColors.danger : YuntaColors.primary,
                   size: 27,
                 ),
               ),
@@ -76,11 +76,13 @@ class PostCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            type?.label ?? 'Aviso vecinal',
+                            type?.publishLabel ??
+                                type?.label ??
+                                'Aviso vecinal',
                             style: TextStyle(
                               color: emergency
                                   ? YuntaColors.danger
-                                  : YuntaColors.ink,
+                                  : YuntaColors.primary,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -120,7 +122,7 @@ class PostCard extends StatelessWidget {
                             post['status'] as String? ?? '',
                           ),
                           color: active
-                              ? const Color(0xFF368857)
+                              ? YuntaColors.success
                               : YuntaColors.muted,
                           iconSize: 9,
                         ),

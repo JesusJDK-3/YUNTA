@@ -82,19 +82,21 @@ class _BubblePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final fills = [
+      YuntaColors.mint.withValues(alpha: 0.34),
+      YuntaColors.action.withValues(alpha: 0.2),
+      YuntaColors.surfaceMintStrong.withValues(alpha: 0.62),
+    ];
     final points = <(double, double, double, double)>[
       (0.27, 0.58, 22, 0.0),
       (0.54, 0.39, 31, 0.36),
       (0.79, 0.62, 16, 0.68),
     ];
-    for (final (x, y, radius, phase) in points) {
+    for (var index = 0; index < points.length; index++) {
+      final (x, y, radius, phase) = points[index];
       final drift = math.sin((progress + phase) * math.pi) * 5;
       final center = Offset(size.width * x + drift, size.height * y - drift);
-      canvas.drawCircle(
-        center,
-        radius,
-        Paint()..color = YuntaColors.yellowPale.withValues(alpha: 0.8),
-      );
+      canvas.drawCircle(center, radius, Paint()..color = fills[index]);
       canvas.drawCircle(
         center.translate(-radius * 0.28, -radius * 0.34),
         radius * 0.12,

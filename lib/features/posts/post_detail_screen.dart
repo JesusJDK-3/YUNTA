@@ -226,6 +226,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         area != null &&
         area.trim().isNotEmpty &&
         area.trim().toLowerCase() != 'zona aproximada';
+    final locationLabel = [
+      if (hasArea) area.trim(),
+      if (distance != null) 'A $distance m',
+    ].join(' · ');
     final emergency = post['category'] == 'emergency';
     final active = _status == 'open' || _status == 'coordinating';
     final recommendationCount =
@@ -234,63 +238,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
       children: [
-        Row(
-          children: [
-            Icon(
-              type?.icon ?? Icons.campaign_outlined,
-              color: emergency ? YuntaColors.danger : YuntaColors.ink,
-              size: 28,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                type?.label ?? 'Aviso vecinal',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: emergency ? YuntaColors.danger : YuntaColors.ink,
-                ),
-              ),
-            ),
-            Text(_group ? 'Grupal' : 'Individual'),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Text(
-          post['title'] as String? ?? '',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 9),
-        Text('Publicado por ${post['author_name'] ?? 'Vecino'}'),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 14,
-          runSpacing: 8,
-          children: [
-            PostDetailFact(
-              icon: Icons.location_on_outlined,
-              label: [
-                if (hasArea) area.trim(),
-                if (distance != null) 'A $distance m',
-              ].join(' · '),
-            ),
-            PostDetailFact(
-              icon: Icons.circle,
-              label: postStatusLabel(_status),
-              color: _status == 'open' || _status == 'coordinating'
-                  ? const Color(0xFF368857)
-                  : YuntaColors.muted,
-            ),
-            PostDetailFact(
-              icon: Icons.groups_outlined,
-              label: '${post['member_count'] ?? 0} participantes',
-            ),
-          ],
-        ),
-        const SizedBox(height: 22),
-        Text('Descripción', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Text(
-          post['description'] as String? ?? '',
-          style: Theme.of(context).textTheme.bodyLarge,
+        PostDetailSummaryCard(
+          icon: type?.icon ?? Icons.campaign_outlined,
+          typeLabel: type?.publishLabel ?? type?.label ?? 'Aviso vecinal',
+          mode: _group ? 'Grupal' : 'Individual',
+          title: post['title'] as String? ?? '',
+          author: post['author_name'] as String? ?? 'Vecino',
+          locationLabel: locationLabel,
+          statusLabel: postStatusLabel(_status),
+          statusColor: active ? YuntaColors.success : YuntaColors.muted,
+          memberCount: (post['member_count'] as num?)?.toInt() ?? 0,
+          description: post['description'] as String? ?? '',
+          emergency: emergency,
         ),
         if (emergency) const PostEmergencyNote(),
         if (_isAuthor && offers.isNotEmpty && _canAcceptOffers) ...[
