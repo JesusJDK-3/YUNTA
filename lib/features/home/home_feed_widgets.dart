@@ -98,14 +98,30 @@ class HomeLoadError extends StatelessWidget {
   const HomeLoadError({
     required this.message,
     required this.onRetry,
+    this.compact = false,
     super.key,
   });
 
   final String message;
   final VoidCallback onRetry;
+  final bool compact;
 
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context) {
+    if (compact) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Row(
+          children: [
+            const Icon(Icons.cloud_off_outlined, color: YuntaColors.muted),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+            TextButton(onPressed: onRetry, child: const Text('Reintentar')),
+          ],
+        ),
+      );
+    }
+    return Column(
     children: [
       const SizedBox(height: 28),
       const Icon(Icons.cloud_off_outlined, size: 40, color: YuntaColors.muted),
@@ -117,5 +133,6 @@ class HomeLoadError extends StatelessWidget {
         label: const Text('Reintentar'),
       ),
     ],
-  );
+    );
+  }
 }

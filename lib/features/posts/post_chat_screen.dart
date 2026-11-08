@@ -297,8 +297,10 @@ class _PostChatScreenState extends State<PostChatScreen>
   }
 
   void _scrollToNewest(List<Map<String, dynamic>> rows) {
-    final newestId = rows.last['id'] as String?;
-    if (newestId == null || newestId == _latestRenderedId) return;
+    final newestId = rows.last['id']?.toString();
+    if (newestId == null || newestId.isEmpty || newestId == _latestRenderedId) {
+      return;
+    }
     final wasAtBottom =
         !_scrollController.hasClients ||
         _scrollController.position.maxScrollExtent -
@@ -307,7 +309,7 @@ class _PostChatScreenState extends State<PostChatScreen>
     _latestRenderedId = newestId;
     if (!wasAtBottom) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_scrollController.hasClients) return;
+      if (!mounted || !_scrollController.hasClients) return;
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 200),

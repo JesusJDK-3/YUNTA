@@ -23,6 +23,7 @@ build/
 *.jks
 *.keystore
 android/local.properties
+android/key.properties
 android/.gradle/
 android/app/.cxx/
 android/app/build/

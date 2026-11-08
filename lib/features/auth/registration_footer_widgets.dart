@@ -2,36 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/yunta_theme.dart';
 
-class RegistrationPrivacyBanner extends StatelessWidget {
-  const RegistrationPrivacyBanner({super.key});
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(15),
-    decoration: BoxDecoration(
-      color: YuntaColors.registrationSky,
-      borderRadius: BorderRadius.circular(22),
-    ),
-    child: const Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CircleAvatar(
-          radius: 20,
-          backgroundColor: YuntaColors.surfaceWhite,
-          child: Icon(Icons.shield_outlined, color: YuntaColors.primary),
-        ),
-        SizedBox(width: 11),
-        Expanded(
-          child: Text(
-            'Solo compartimos tu distancia aproximada; nunca tu dirección '
-            'exacta ni tu número de teléfono.',
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 class RegistrationCountryCode extends StatelessWidget {
   const RegistrationCountryCode({super.key});
 

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/theme/yunta_theme.dart';
-import '../features/auth/registration_screen.dart';
 import '../features/auth/profile_repository.dart';
+import '../features/auth/registration_screen.dart';
+import '../features/auth/registration_tutorial_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/notifications/notification_inbox_screen.dart';
 import '../shared/widgets/yunta_wordmark.dart';
 import 'yunta_navigation.dart';
+import 'yunta_splash.dart';
 
 class YuntaApp extends StatelessWidget {
   const YuntaApp({required this.supabaseConfigured, super.key});
@@ -22,9 +24,11 @@ class YuntaApp extends StatelessWidget {
     debugShowCheckedModeBanner: false,
     theme: YuntaTheme.light,
     routes: {'/notifications': (_) => const NotificationInboxScreen()},
-    home: supabaseConfigured
-        ? const SessionGate()
-        : const ConfigurationScreen(),
+    home: YuntaSplash(
+      child: supabaseConfigured
+          ? const SessionGate()
+          : const ConfigurationScreen(),
+    ),
   );
 }
 
@@ -37,6 +41,8 @@ class SessionGate extends StatefulWidget {
 
 class _SessionGateState extends State<SessionGate> {
   late Future<RegisteredProfile?> _profile;
+  var _tutorialBusy = false;
+  String? _tutorialError;
 
   @override
   void initState() {
@@ -58,6 +64,33 @@ class _SessionGateState extends State<SessionGate> {
     _profile = _loadProfile();
   });
 
+  Future<void> _finishTutorial(RegisteredProfile profile) async {
+    setState(() {
+      _tutorialBusy = true;
+      _tutorialError = null;
+    });
+    try {
+      await ProfileRepository(Supabase.instance.client).saveProfile(
+        displayName: profile.displayName,
+        phoneE164: profile.phoneE164,
+        location: profile.location,
+        locationSource: profile.locationSource,
+        tutorialCompleted: true,
+      );
+      if (!mounted) return;
+      setState(() {
+        _tutorialBusy = false;
+        _profile = Future.value(profile.copyWith(tutorialCompleted: true));
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _tutorialBusy = false;
+        _tutorialError = 'No se pudo guardar el tutorial. Inténtalo de nuevo.';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) => FutureBuilder<RegisteredProfile?>(
     future: _profile,
@@ -70,7 +103,17 @@ class _SessionGateState extends State<SessionGate> {
       if (profile == null) {
         return RegistrationScreen(onRegistered: _registered);
       }
-      return HomeScreen(profile: profile);
+      if (!profile.tutorialCompleted) {
+        return RegistrationTutorialScreen(
+          busy: _tutorialBusy,
+          error: _tutorialError,
+          onAcknowledge: () => _finishTutorial(profile),
+        );
+      }
+      return HomeScreen(
+        profile: profile,
+        onProfileChanged: _registered,
+      );
     },
   );
 }

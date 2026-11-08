@@ -98,18 +98,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
     try {
       final digits = _phone.text.replaceAll(RegExp(r'\D'), '');
-      await ProfileRepository(Supabase.instance.client).saveRegistration(
+      await ProfileRepository(Supabase.instance.client).saveProfile(
         displayName: _name.text.trim(),
         phoneE164: '+51$digits',
         location: _point!,
         locationSource: _source,
+        tutorialCompleted: false,
       );
       if (mounted) {
         widget.onRegistered(
           RegisteredProfile(
             displayName: _name.text.trim(),
+            phoneE164: '+51$digits',
             location: _point!,
             locationSource: _source,
+            tutorialCompleted: false,
           ),
         );
       }
@@ -179,8 +182,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     const SizedBox(height: 11),
                     _locationFeedback(),
                   ],
-                  const SizedBox(height: 14),
-                  const RegistrationPrivacyBanner(),
                 ],
               ),
             ),
@@ -220,7 +221,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Widget _phoneField() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      _fieldCaption('Número de celular', 'Privado, sin SMS'),
+      _fieldCaption('Número de celular', 'Sin SMS'),
       const SizedBox(height: 7),
       Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,31 +249,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             ),
           ),
         ],
-      ),
-      const SizedBox(height: 11),
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: YuntaColors.surfaceMint,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.lock_outline_rounded,
-              size: 19,
-              color: YuntaColors.primary,
-            ),
-            SizedBox(width: 9),
-            Expanded(
-              child: Text(
-                'Tu número es privado y seguro. Solo tú lo administras y '
-                'nunca se muestra a otros vecinos.',
-              ),
-            ),
-          ],
-        ),
       ),
     ],
   );

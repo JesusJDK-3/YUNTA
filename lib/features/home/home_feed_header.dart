@@ -8,11 +8,13 @@ class HomeFeedHeader extends StatelessWidget {
   const HomeFeedHeader({
     required this.displayName,
     required this.locationSource,
+    required this.onEditProfile,
     super.key,
   });
 
   final String displayName;
   final String locationSource;
+  final VoidCallback onEditProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +33,18 @@ class HomeFeedHeader extends StatelessWidget {
         const SizedBox(height: 18),
         Row(
           children: [
-            CircleAvatar(
-              radius: 23,
-              backgroundColor: YuntaColors.surfaceMint,
-              child: Text(initial, style: _avatarText),
+            Semantics(
+              button: true,
+              label: 'Editar perfil',
+              child: InkWell(
+                onTap: onEditProfile,
+                customBorder: const CircleBorder(),
+                child: CircleAvatar(
+                  radius: 23,
+                  backgroundColor: YuntaColors.surfaceMint,
+                  child: Text(initial, style: _avatarText),
+                ),
+              ),
             ),
             const SizedBox(width: 11),
             Expanded(

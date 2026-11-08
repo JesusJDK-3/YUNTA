@@ -187,7 +187,6 @@ class RegistrationLocationPanel extends StatelessWidget {
           runSpacing: 8,
           children: const [
             _InfoPill(icon: Icons.radar_rounded, label: 'Radio de 500 m'),
-            _InfoPill(icon: Icons.shield_outlined, label: 'Ubicación privada'),
           ],
         ),
         const SizedBox(height: 12),

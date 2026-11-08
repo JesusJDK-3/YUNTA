@@ -3,7 +3,16 @@ import 'package:flutter/material.dart';
 import '../../core/theme/yunta_theme.dart';
 
 class RegistrationTutorialScreen extends StatelessWidget {
-  const RegistrationTutorialScreen({super.key});
+  const RegistrationTutorialScreen({
+    this.onAcknowledge,
+    this.busy = false,
+    this.error,
+    super.key,
+  });
+
+  final VoidCallback? onAcknowledge;
+  final bool busy;
+  final String? error;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -46,9 +55,15 @@ class RegistrationTutorialScreen extends StatelessWidget {
                     'Al participar, puedes hablar con los vecinos del aviso.',
               ),
               const SizedBox(height: 22),
+              if (error != null) ...[
+                Text(error!, style: const TextStyle(color: YuntaColors.danger)),
+                const SizedBox(height: 10),
+              ],
               FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Entendido'),
+                onPressed: busy
+                    ? null
+                    : (onAcknowledge ?? () => Navigator.of(context).pop()),
+                child: Text(busy ? 'Guardando…' : 'Entendido'),
               ),
             ],
           ),

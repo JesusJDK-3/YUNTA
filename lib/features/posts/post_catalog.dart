@@ -53,12 +53,14 @@ const postTypes = <PostTypeDefinition>[
     category: PostCategory.help,
     label: 'Puedo ayudar',
     icon: Icons.volunteer_activism_outlined,
+    publishLabel: 'Puedo ayudar',
   ),
   PostTypeDefinition(
     value: 'product',
     category: PostCategory.productsServices,
     label: 'Producto',
     icon: Icons.inventory_2_outlined,
+    publishLabel: 'Producto',
   ),
   PostTypeDefinition(
     value: 'service',
@@ -72,7 +74,6 @@ const postTypes = <PostTypeDefinition>[
     category: PostCategory.emergency,
     label: 'Necesito apoyo urgente',
     icon: Icons.warning_amber_rounded,
-    groupOnly: true,
     publishLabel: 'Aviso de emergencia',
   ),
   PostTypeDefinition(
@@ -80,6 +81,7 @@ const postTypes = <PostTypeDefinition>[
     category: PostCategory.emergency,
     label: 'Tengo un recurso disponible',
     icon: Icons.inventory_outlined,
+    publishLabel: 'Tengo un recurso disponible',
   ),
   PostTypeDefinition(
     value: 'support_group_available',
@@ -87,6 +89,7 @@ const postTypes = <PostTypeDefinition>[
     label: 'Grupo de apoyo disponible',
     icon: Icons.groups_outlined,
     groupOnly: true,
+    publishLabel: 'Grupo de apoyo disponible',
   ),
 ];
 
@@ -106,5 +109,7 @@ String postStatusLabel(String status) => switch (status) {
   'coordinating' => 'En coordinación',
   'resolved' => 'Resuelto',
   'cancelled' => 'Retirado',
+  'pending_send' => 'Pendiente de envío',
+  'pending_blocked' => 'No se pudo enviar',
   _ => 'Estado no disponible',
 };

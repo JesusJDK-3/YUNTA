@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/yunta_theme.dart';
@@ -26,6 +28,7 @@ class PostCard extends StatelessWidget {
         (post['recommendation_count'] as num?)?.toInt() ?? 0;
     final author = post['author_name'] as String? ?? 'Vecino';
     final imageUrl = post['image_url'] as String?;
+    final localImage = post['local_image_path'] as String?;
     final elapsed = emergency ? _elapsed(post['created_at']) : null;
 
     return Material(
@@ -99,7 +102,22 @@ class PostCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
-            if (imageUrl != null && imageUrl.isNotEmpty) ...[
+            if (localImage != null && localImage.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.file(
+                    File(localImage),
+                    width: double.infinity,
+                    height: featuredEmergency ? 154 : 138,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+            ] else if (imageUrl != null && imageUrl.isNotEmpty) ...[
               const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),

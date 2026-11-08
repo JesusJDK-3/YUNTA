@@ -7,12 +7,13 @@ import 'package:uuid/uuid.dart';
 import '../../core/location/location_point.dart';
 import '../../core/theme/yunta_theme.dart';
 import '../auth/location_picker_screen.dart';
+import 'pending_post_store.dart';
 import 'post_catalog.dart';
 import 'post_composer_sections.dart';
 import 'post_image_attachment.dart';
 import 'post_repository.dart';
 
-enum PostPublishResult { published, photoUploadFailed }
+enum PostPublishResult { published, photoUploadFailed, savedOffline }
 
 class PostComposerScreen extends StatefulWidget {
   const PostComposerScreen({
@@ -104,14 +105,41 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
         );
       }
     } catch (_) {
+      await _keepOffline();
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _keepOffline() async {
+    try {
+      String? imagePath;
+      final image = _selectedImage;
+      if (image != null) {
+        imagePath = await PendingPostStore.instance.saveImage(_postId, image);
+      }
+      await PendingPostStore.instance.upsert(
+        PendingPost(
+          id: _postId,
+          category: widget.type.category.databaseValue,
+          type: widget.type.value,
+          title: _title.text.trim(),
+          description: _description.text.trim(),
+          coordinationMode: _coordinationMode,
+          latitude: _location.latitude,
+          longitude: _location.longitude,
+          createdAt: DateTime.now().toUtc().toIso8601String(),
+          imagePath: imagePath,
+        ),
+      );
+      if (mounted) Navigator.of(context).pop(PostPublishResult.savedOffline);
+    } catch (_) {
       if (mounted) {
         setState(
           () => _error =
-              'No se pudo publicar. Revisa tu conexión e inténtalo de nuevo.',
+              'No se pudo publicar ni guardar el aviso en este teléfono.',
         );
       }
-    } finally {
-      if (mounted) setState(() => _saving = false);
     }
   }
 
