@@ -100,7 +100,36 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Publica en Yunta')),
+    appBar: AppBar(title: const Text('Nuevo aviso')),
+    bottomNavigationBar: SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+        decoration: const BoxDecoration(
+          color: YuntaColors.surfaceWhite,
+          border: Border(top: BorderSide(color: YuntaColors.outlineSoft)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_error != null) ...[
+              Text(_error!, style: const TextStyle(color: YuntaColors.danger)),
+              const SizedBox(height: 8),
+            ],
+            FilledButton.icon(
+              onPressed: _saving ? null : _publish,
+              icon: _saving
+                  ? const SizedBox.square(
+                      dimension: 19,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.send_rounded),
+              label: Text(_saving ? 'Publicando…' : 'Publicar aviso'),
+            ),
+          ],
+        ),
+      ),
+    ),
     body: SafeArea(
       child: Center(
         child: ConstrainedBox(
@@ -108,124 +137,119 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
           child: Form(
             key: _formKey,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(22, 12, 22, 28),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
               children: [
                 _typeHeading(context),
-                const SizedBox(height: 22),
-                TextFormField(
-                  controller: _title,
-                  textCapitalization: TextCapitalization.sentences,
-                  textInputAction: TextInputAction.next,
-                  maxLength: 100,
-                  decoration: const InputDecoration(
-                    labelText: 'Título',
-                    hintText: 'Resume lo que necesitas o compartes',
+                const SizedBox(height: 18),
+                _sectionCard(
+                  context,
+                  title: 'Cuéntales a tus vecinos',
+                  icon: Icons.edit_note_rounded,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _title,
+                        textCapitalization: TextCapitalization.sentences,
+                        textInputAction: TextInputAction.next,
+                        maxLength: 100,
+                        decoration: const InputDecoration(
+                          labelText: 'Título',
+                          hintText: '¿Qué necesitas o compartes?',
+                        ),
+                        validator: (value) {
+                          final text = value?.trim() ?? '';
+                          if (text.length < 4) {
+                            return 'Escribe al menos 4 caracteres.';
+                          }
+                          if (_containsPhone(text)) {
+                            return 'No publiques celulares; compártelos por el chat.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _description,
+                        textCapitalization: TextCapitalization.sentences,
+                        minLines: 4,
+                        maxLines: 6,
+                        maxLength: 1200,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(1200),
+                        ],
+                        decoration: const InputDecoration(
+                          labelText: 'Descripción',
+                          alignLabelWithHint: true,
+                          hintText: 'Añade detalles importantes…',
+                        ),
+                        validator: (value) {
+                          final text = value?.trim() ?? '';
+                          if (text.length < 8) {
+                            return 'Escribe al menos 8 caracteres.';
+                          }
+                          if (_containsPhone(text)) {
+                            return 'No publiques celulares; compártelos por el chat.';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
                   ),
-                  validator: (value) {
-                    final text = value?.trim() ?? '';
-                    if (text.length < 4) {
-                      return 'Escribe al menos 4 caracteres.';
-                    }
-                    if (_containsPhone(text)) {
-                      return 'No publiques celulares; compártelos por el chat.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _description,
-                  textCapitalization: TextCapitalization.sentences,
-                  minLines: 3,
-                  maxLines: 6,
-                  maxLength: 1200,
-                  inputFormatters: [LengthLimitingTextInputFormatter(1200)],
-                  decoration: const InputDecoration(
-                    labelText: 'Cuéntanos un poco más',
-                    alignLabelWithHint: true,
-                    hintText: 'Añade detalles para que los vecinos sepan cómo ayudar…',
-                  ),
-                  validator: (value) {
-                    final text = value?.trim() ?? '';
-                    if (text.length < 8) {
-                      return 'Escribe al menos 8 caracteres.';
-                    }
-                    if (_containsPhone(text)) {
-                      return 'No publiques celulares; compártelos por el chat.';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  '¿Cómo quieres coordinar?',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(
-                      value: 'individual',
-                      icon: Icon(Icons.person_outline),
-                      label: Text('Individual'),
-                    ),
-                    ButtonSegment(
-                      value: 'group',
-                      icon: Icon(Icons.groups_outlined),
-                      label: Text('En grupo'),
-                    ),
-                  ],
-                  selected: {_coordinationMode},
-                  onSelectionChanged: _fixedGroup
-                      ? null
-                      : (selected) =>
-                            setState(() => _coordinationMode = selected.first),
-                ),
-                if (_fixedGroup)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 6),
-                    child: Text('Este tipo de aviso se coordina en grupo.'),
-                  ),
-                const SizedBox(height: 22),
-                Text(
-                  'Ubicación del aviso',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  onPressed: _saving ? null : _chooseLocation,
-                  icon: const Icon(Icons.map_outlined),
-                  label: const Text('Confirmar o cambiar en el mapa'),
-                ),
-                const SizedBox(height: 7),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: YuntaColors.surfaceBlue,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Text(
-                    'El muro solo mostrará una distancia aproximada. No agregues '
-                    'tu dirección exacta al texto.',
+                _sectionCard(
+                  context,
+                  title: '¿Cómo quieres coordinar?',
+                  icon: Icons.groups_outlined,
+                  child: Column(
+                    children: [
+                      if (!_fixedGroup) ...[
+                        _modeOption(
+                          context,
+                          value: 'individual',
+                          title: 'Individual',
+                          subtitle: 'Coordina en privado con un vecino.',
+                          icon: Icons.person_outline,
+                        ),
+                        const SizedBox(height: 9),
+                      ],
+                      _modeOption(
+                        context,
+                        value: 'group',
+                        title: 'En grupo',
+                        subtitle: _fixedGroup
+                            ? 'Este aviso se coordina en grupo.'
+                            : 'Varios vecinos comparten un chat.',
+                        icon: Icons.groups_outlined,
+                      ),
+                    ],
                   ),
                 ),
-                if (_error != null) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    _error!,
-                    style: const TextStyle(color: YuntaColors.danger),
+                const SizedBox(height: 16),
+                _sectionCard(
+                  context,
+                  title: 'Ubicación del aviso',
+                  icon: Icons.location_on_outlined,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Confirma dónde necesitan encontrar este aviso.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: _saving ? null : _chooseLocation,
+                        icon: const Icon(Icons.map_outlined),
+                        label: const Text('Elegir en el mapa'),
+                      ),
+                      const SizedBox(height: 9),
+                      const Text(
+                        'En el muro solo se muestra una distancia aproximada; '
+                        'tu punto exacto permanece privado.',
+                      ),
+                    ],
                   ),
-                ],
-                const SizedBox(height: 22),
-                FilledButton.icon(
-                  onPressed: _saving ? null : _publish,
-                  icon: _saving
-                      ? const SizedBox.square(
-                          dimension: 19,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.send_rounded),
-                  label: Text(_saving ? 'Publicando…' : 'Publicar aviso'),
                 ),
               ],
             ),
@@ -234,6 +258,94 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
       ),
     ),
   );
+
+  Widget _sectionCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: YuntaColors.surfaceWhite,
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .65)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              icon,
+              color: _emergency ? YuntaColors.danger : YuntaColors.primary,
+            ),
+            const SizedBox(width: 9),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        child,
+      ],
+    ),
+  );
+
+  Widget _modeOption(
+    BuildContext context, {
+    required String value,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    final selected = _coordinationMode == value;
+    final enabled = !_fixedGroup && !_saving;
+    return Material(
+      color: selected ? YuntaColors.surfaceBlue : YuntaColors.surfaceWhite,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: selected ? YuntaColors.primary : YuntaColors.outlineSoft,
+        ),
+      ),
+      child: InkWell(
+        onTap: enabled ? () => setState(() => _coordinationMode = value) : null,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(icon, color: YuntaColors.primary),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: Theme.of(context).textTheme.titleSmall),
+                    Text(
+                      subtitle,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Radio<String>(
+                value: value,
+                groupValue: _coordinationMode,
+                onChanged: enabled
+                    ? (next) => setState(() => _coordinationMode = next!)
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _typeHeading(BuildContext context) => Container(
     padding: const EdgeInsets.all(16),

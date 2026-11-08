@@ -37,3 +37,22 @@ states. Type follows the reference scale through Android's native sans face.
 - Keep the existing slow registration bubbles and reduced-motion handling.
   Use Material ripples and short state transitions elsewhere; do not animate
   feed content or messages continuously.
+
+## Screen compositions
+
+- Registration pairs the Yunta mark and welcome illustration with the name,
+  private phone, GPS/map actions, and a live preview only after a real point is
+  selected. The preview shows the 500 m radius, not a neighborhood name.
+- The wall places the radius and greeting above horizontal category controls,
+  real emergency notices, tappable post cards, the publish action, and existing
+  Muro/Actividad destinations.
+- The publish sheet stays grouped by category. Its editor uses separate cards
+  for post content, coordination mode, and the real post location, with the
+  submit action anchored at the bottom.
+- Detail separates the post identity, author, status and distance facts,
+  description, and eligible coordination actions. Eligible recipients can
+  open the optional rating flow after an individual case is resolved.
+- Chat keeps the actual post title and status visible, sorts history oldest to
+  newest, and keeps the message composer fixed below the scrollable history.
+- Rating asks for an optional 1–5 score and comment; eligibility and storage
+  remain enforced by the existing Supabase RPC.

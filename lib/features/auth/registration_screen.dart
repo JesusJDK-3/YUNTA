@@ -5,10 +5,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/location/device_location.dart';
 import '../../core/location/location_point.dart';
 import '../../core/theme/yunta_theme.dart';
-import '../../shared/widgets/ambient_bubbles.dart';
+import '../../shared/widgets/neighborhood_illustration.dart';
 import '../../shared/widgets/yunta_wordmark.dart';
 import 'location_picker_screen.dart';
 import 'profile_repository.dart';
+import 'registration_location_preview.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({required this.onRegistered, super.key});
@@ -207,7 +208,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ],
         ),
       ),
-      const AmbientBubbles(),
+      const NeighborhoodIllustration(),
     ],
   );
 
@@ -289,7 +290,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             child: const Text('Elegir en el mapa'),
           ),
         ),
-        if (_point != null)
+        if (_point != null) ...[
+          RegistrationLocationPreview(point: _point!),
+          const SizedBox(height: 12),
           const Row(
             children: [
               Icon(Icons.check_circle, size: 18, color: YuntaColors.success),
@@ -297,6 +300,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               Text('Ubicación lista', style: TextStyle(color: YuntaColors.ink)),
             ],
           ),
+        ],
         const SizedBox(height: 5),
         const Text(
           'Tu ubicación exacta es privada. Se usa para encontrar avisos cercanos.',

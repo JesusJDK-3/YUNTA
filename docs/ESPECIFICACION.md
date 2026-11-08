@@ -20,8 +20,8 @@ Cada barrio cuenta con un muro de publicaciones. El vecino puede pedir u ofrecer
 ### Muro
 
 - Presentar las secciones Ayuda, Productos y servicios, y Emergencias, más un botón visible Publicar.
-- Filtrar las tres secciones a 500 m desde la ubicación del vecino. Un aviso cercano puede aparecer aunque pertenezca a otro barrio; el nombre de barrio orienta, pero no reemplaza el filtro por distancia.
-- Cada aviso conserva su propia ubicación, que puede diferir de la ubicación del autor. Mostrar distancia y zona aproximadas; no mostrar coordenadas exactas.
+- Filtrar las tres secciones a 500 m desde la ubicación del vecino. La distancia es el criterio de visibilidad; la app no solicita ni muestra nombres de barrio.
+- Cada aviso conserva su propia ubicación, que puede diferir de la ubicación del autor. Mostrar una distancia calculada y redondeada; no mostrar coordenadas exactas ni nombre de barrio.
 - Cada tarjeta presenta título, distancia aproximada y estado, además de si la coordinación es individual o grupal.
 - El flujo de publicación debe requerir tres acciones principales desde el muro: Publicar, elegir el tipo y enviar. Descripción y modalidad van en el mismo formulario.
 - Emergencias llevan un ícono y una etiqueta en rojo ladrillo.
@@ -91,7 +91,7 @@ En un caso individual deben distinguirse receptor y proveedor por separado del a
 ## Permisos y privacidad
 
 - Cada vecino edita su nombre, teléfono, ubicación y preferencias; los datos privados solo son consultables por su titular desde la app.
-- La búsqueda devuelve avisos dentro de 500 m. Las coordenadas exactas se usan en el cálculo; el muro muestra zona y distancia aproximadas.
+- La búsqueda devuelve avisos dentro de 500 m. Las coordenadas exactas se usan en el cálculo; el muro muestra solo una distancia aproximada redondeada, sin nombre de barrio.
 - Solo el autor puede modificar, resolver, cancelar o reabrir su publicación.
 - Solo el autor y participantes con acceso vigente leen o envían mensajes. Las reglas deben aplicarse en Supabase con RLS, no solo ocultando controles en la interfaz.
 - Quien recibió la ayuda o servicio califica a quien lo prestó; esa persona no necesariamente es el autor del aviso.
@@ -127,3 +127,13 @@ La referencia visual original es [Campsite en Refero](https://styles.refero.desi
 - Usar tarjetas claras con esquinas suaves, separación generosa y componentes Material 3. No añadir navegación, datos ni acciones que no existan en la app.
 - El prototipo Stitch es solo referencia visual: no copiar sus nombres, avisos, fotos, mapas, barrios, reputaciones ni contenido de muestra como datos del producto.
 - Mantener ubicación GPS real o punto elegido en mapa, radio de 500 m, privacidad de coordenadas y teléfono, y todas las funciones Supabase actuales.
+
+### Composición de las pantallas tomada de Stitch
+
+- **Registro:** logotipo Y y bienvenida ilustrada; formulario de nombre y teléfono; botón para usar GPS o elegir un punto en el mapa; vista previa de la ubicación real seleccionada y su radio de 500 m. No solicitar un nombre de barrio.
+- **Muro:** encabezado con marca y perfil, radio, saludo, selector horizontal de categorías, aviso de emergencia solo cuando existan avisos reales, tarjetas tocables y botón flotante Publicar. La barra inferior solo lleva a las vistas que existen.
+- **Selección y publicación:** hoja inferior agrupada por categorías; formulario visual en secciones para título, descripción, modalidad y ubicación; botón Publicar fijo al pie. Mantener los tipos y acciones disponibles del flujo aprobado.
+- **Detalle:** jerarquía clara entre tipo, modalidad, título, autor, distancia, estado, participantes y descripción. Las acciones de coordinación corresponden al estado y a la relación del vecino con el aviso.
+- **Chat:** título ligado al aviso, indicador privado y modalidad/estado reales; historial ascendente con los mensajes antiguos arriba y los nuevos abajo; campo de envío anclado al pie.
+- **Valoración:** pantalla opcional después de resolver un caso individual para que quien recibió la ayuda califique al proveedor con 1–5 estrellas y comentario opcional. Se puede omitir y Supabase valida quién puede enviarla.
+- Las tarjetas, conteos, distancia, participantes, actividad y valoración siempre se derivan de datos reales; nunca se rellenan con la muestra visual de Stitch.

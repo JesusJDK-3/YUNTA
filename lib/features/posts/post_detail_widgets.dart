@@ -32,11 +32,11 @@ class PostDetailSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(18),
+    padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
       color: YuntaColors.surfaceWhite,
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .6)),
+      borderRadius: BorderRadius.circular(25),
+      border: Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .7)),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,18 +44,19 @@ class PostDetailSummaryCard extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 50,
+              height: 50,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: emergency
                     ? YuntaColors.dangerSoft
                     : YuntaColors.surfaceBlue,
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(17),
               ),
               child: Icon(
                 icon,
                 color: emergency ? YuntaColors.danger : YuntaColors.primary,
+                size: 27,
               ),
             ),
             const SizedBox(width: 12),
@@ -70,17 +71,37 @@ class PostDetailSummaryCard extends StatelessWidget {
             _ModePill(label: mode),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 21),
         Text(title, style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 5),
-        Text(
-          'Publicado por $author',
-          style: Theme.of(context).textTheme.bodyMedium,
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            CircleAvatar(
+              radius: 17,
+              backgroundColor: YuntaColors.surfaceMint,
+              child: Text(
+                author.isEmpty ? '?' : author.characters.first.toUpperCase(),
+                style: const TextStyle(
+                  color: YuntaColors.ink,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 9),
+            Expanded(
+              child: Text(
+                'Publicado por $author',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
+        const Divider(),
+        const SizedBox(height: 13),
         Wrap(
-          spacing: 12,
-          runSpacing: 8,
+          spacing: 15,
+          runSpacing: 10,
           children: [
             if (locationLabel.isNotEmpty)
               PostDetailFact(
@@ -94,14 +115,31 @@ class PostDetailSummaryCard extends StatelessWidget {
             ),
             PostDetailFact(
               icon: Icons.groups_outlined,
-              label: '$memberCount participantes',
+              label:
+                  '$memberCount ${memberCount == 1 ? 'participante' : 'participantes'}',
             ),
           ],
         ),
         const SizedBox(height: 20),
-        Text('Descripción', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 7),
-        Text(description, style: Theme.of(context).textTheme.bodyLarge),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            color: YuntaColors.surfaceBlue.withValues(alpha: .65),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Descripción',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 7),
+              Text(description, style: Theme.of(context).textTheme.bodyLarge),
+            ],
+          ),
+        ),
       ],
     ),
   );
