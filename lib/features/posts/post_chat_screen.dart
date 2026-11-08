@@ -21,7 +21,9 @@ class PostChatScreen extends StatefulWidget {
 
 class _PostChatScreenState extends State<PostChatScreen> {
   final _controller = TextEditingController();
+  final _scrollController = ScrollController();
   late final Stream<List<Map<String, dynamic>>> _messages;
+  String? _latestRenderedId;
   bool _sending = false;
 
   String get _userId => Supabase.instance.client.auth.currentUser?.id ?? '';
@@ -33,12 +35,13 @@ class _PostChatScreenState extends State<PostChatScreen> {
         .from('messages')
         .stream(primaryKey: ['id'])
         .eq('post_id', widget.postId)
-        .order('created_at');
+        .order('created_at', ascending: true);
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -94,6 +97,7 @@ class _PostChatScreenState extends State<PostChatScreen> {
                 return const Center(child: CircularProgressIndicator());
               }
               final rows = snapshot.data!;
+              if (rows.isNotEmpty) _scrollToNewest(rows);
               if (rows.isEmpty) {
                 return const Center(
                   child: Padding(
@@ -107,11 +111,11 @@ class _PostChatScreenState extends State<PostChatScreen> {
                 );
               }
               return ListView.builder(
-                reverse: true,
+                controller: _scrollController,
                 padding: const EdgeInsets.all(16),
                 itemCount: rows.length,
                 itemBuilder: (context, index) {
-                  final message = rows[rows.length - index - 1];
+                  final message = rows[index];
                   return _MessageBubble(
                     body: message['body'] as String? ?? '',
                     mine: message['sender_id'] == _userId,
@@ -168,6 +172,26 @@ class _PostChatScreenState extends State<PostChatScreen> {
       ],
     ),
   );
+
+  void _scrollToNewest(List<Map<String, dynamic>> rows) {
+    final newestId = rows.last['id'] as String?;
+    if (newestId == null || newestId == _latestRenderedId) return;
+    final wasAtBottom =
+        !_scrollController.hasClients ||
+        _scrollController.position.maxScrollExtent -
+                _scrollController.position.pixels <
+            100;
+    _latestRenderedId = newestId;
+    if (!wasAtBottom) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+      );
+    });
+  }
 }
 
 class _MessageBubble extends StatelessWidget {

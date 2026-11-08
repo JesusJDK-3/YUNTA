@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/yunta_theme.dart';
 import '../../shared/widgets/yunta_wordmark.dart';
 import '../auth/profile_repository.dart';
+import '../notifications/notification_bell.dart';
 import '../posts/post_card.dart';
 import '../posts/post_catalog.dart';
 import '../posts/post_composer_screen.dart';
@@ -167,20 +168,26 @@ class _HomeScreenState extends State<HomeScreen> {
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
       const YuntaWordmark(compact: true),
-      Semantics(
-        label: 'Perfil de ${widget.profile.displayName}',
-        child: CircleAvatar(
-          radius: 24,
-          backgroundColor: YuntaColors.yellow,
-          child: Text(
-            widget.profile.displayName.characters.first.toUpperCase(),
-            style: const TextStyle(
-              color: YuntaColors.inkStrong,
-              fontWeight: FontWeight.w700,
-              fontSize: 19,
+      Row(
+        children: [
+          const NotificationBell(),
+          const SizedBox(width: 4),
+          Semantics(
+            label: 'Perfil de ${widget.profile.displayName}',
+            child: CircleAvatar(
+              radius: 24,
+              backgroundColor: YuntaColors.yellow,
+              child: Text(
+                widget.profile.displayName.characters.first.toUpperCase(),
+                style: const TextStyle(
+                  color: YuntaColors.inkStrong,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 19,
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     ],
   );
