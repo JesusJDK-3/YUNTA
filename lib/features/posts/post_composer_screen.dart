@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -7,7 +8,11 @@ import '../../core/location/location_point.dart';
 import '../../core/theme/yunta_theme.dart';
 import '../auth/location_picker_screen.dart';
 import 'post_catalog.dart';
+import 'post_composer_sections.dart';
+import 'post_image_attachment.dart';
 import 'post_repository.dart';
+
+enum PostPublishResult { published, photoUploadFailed }
 
 class PostComposerScreen extends StatefulWidget {
   const PostComposerScreen({
@@ -31,6 +36,7 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
   late LocationPoint _location;
   String _coordinationMode = 'individual';
   String? _error;
+  XFile? _selectedImage;
   bool _saving = false;
 
   bool get _fixedGroup => widget.type.groupOnly;
@@ -67,7 +73,8 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
       _error = null;
     });
     try {
-      await PostRepository(Supabase.instance.client).createPost(
+      final repository = PostRepository(Supabase.instance.client);
+      await repository.createPost(
         id: _postId,
         category: widget.type.category.databaseValue,
         type: widget.type.value,
@@ -77,7 +84,17 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
         latitude: _location.latitude,
         longitude: _location.longitude,
       );
-      if (mounted) Navigator.of(context).pop(true);
+      if (_selectedImage != null) {
+        try {
+          await repository.attachImage(_postId, _selectedImage!);
+        } catch (_) {
+          if (mounted) {
+            Navigator.of(context).pop(PostPublishResult.photoUploadFailed);
+          }
+          return;
+        }
+      }
+      if (mounted) Navigator.of(context).pop(PostPublishResult.published);
     } on PostgrestException {
       if (mounted) {
         setState(
@@ -139,9 +156,9 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
               children: [
-                _typeHeading(context),
+                postTypeHeading(context, widget.type, emergency: _emergency),
                 const SizedBox(height: 18),
-                _sectionCard(
+                composerSection(
                   context,
                   title: 'Cuéntales a tus vecinos',
                   icon: Icons.edit_note_rounded,
@@ -161,7 +178,7 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
                           if (text.length < 4) {
                             return 'Escribe al menos 4 caracteres.';
                           }
-                          if (_containsPhone(text)) {
+                          if (containsPhoneNumber(text)) {
                             return 'No publiques celulares; compártelos por el chat.';
                           }
                           return null;
@@ -187,46 +204,68 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
                           if (text.length < 8) {
                             return 'Escribe al menos 8 caracteres.';
                           }
-                          if (_containsPhone(text)) {
+                          if (containsPhoneNumber(text)) {
                             return 'No publiques celulares; compártelos por el chat.';
                           }
                           return null;
                         },
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _sectionCard(
-                  context,
-                  title: '¿Cómo quieres coordinar?',
-                  icon: Icons.groups_outlined,
-                  child: Column(
-                    children: [
-                      if (!_fixedGroup) ...[
-                        _modeOption(
-                          context,
-                          value: 'individual',
-                          title: 'Individual',
-                          subtitle: 'Coordina en privado con un vecino.',
-                          icon: Icons.person_outline,
-                        ),
-                        const SizedBox(height: 9),
-                      ],
-                      _modeOption(
-                        context,
-                        value: 'group',
-                        title: 'En grupo',
-                        subtitle: _fixedGroup
-                            ? 'Este aviso se coordina en grupo.'
-                            : 'Varios vecinos comparten un chat.',
-                        icon: Icons.groups_outlined,
+                      const SizedBox(height: 12),
+                      PostImageAttachment(
+                        enabled: !_saving,
+                        onChanged: (image) => _selectedImage = image,
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                _sectionCard(
+                composerSection(
+                  context,
+                  title: '¿Cómo quieres coordinar?',
+                  icon: Icons.groups_outlined,
+                  child: RadioGroup<String>(
+                    groupValue: _coordinationMode,
+                    onChanged: (value) {
+                      if (!_saving && !_fixedGroup && value != null) {
+                        setState(() => _coordinationMode = value);
+                      }
+                    },
+                    child: Column(
+                      children: [
+                        if (!_fixedGroup) ...[
+                          composerModeOption(
+                            context,
+                            value: 'individual',
+                            title: 'Individual',
+                            subtitle: 'Coordina en privado con un vecino.',
+                            icon: Icons.person_outline,
+                            selected: _coordinationMode == 'individual',
+                            enabled: !_saving,
+                            onTap: () => setState(
+                              () => _coordinationMode = 'individual',
+                            ),
+                          ),
+                          const SizedBox(height: 9),
+                        ],
+                        composerModeOption(
+                          context,
+                          value: 'group',
+                          title: 'En grupo',
+                          subtitle: _fixedGroup
+                              ? 'Este aviso se coordina en grupo.'
+                              : 'Varios vecinos comparten un chat.',
+                          icon: Icons.groups_outlined,
+                          selected: _coordinationMode == 'group',
+                          enabled: !_saving && !_fixedGroup,
+                          onTap: () =>
+                              setState(() => _coordinationMode = 'group'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                composerSection(
                   context,
                   title: 'Ubicación del aviso',
                   icon: Icons.location_on_outlined,
@@ -258,137 +297,4 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
       ),
     ),
   );
-
-  Widget _sectionCard(
-    BuildContext context, {
-    required String title,
-    required IconData icon,
-    required Widget child,
-  }) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: YuntaColors.surfaceWhite,
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .65)),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(
-              icon,
-              color: _emergency ? YuntaColors.danger : YuntaColors.primary,
-            ),
-            const SizedBox(width: 9),
-            Expanded(
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        child,
-      ],
-    ),
-  );
-
-  Widget _modeOption(
-    BuildContext context, {
-    required String value,
-    required String title,
-    required String subtitle,
-    required IconData icon,
-  }) {
-    final selected = _coordinationMode == value;
-    final enabled = !_fixedGroup && !_saving;
-    return Material(
-      color: selected ? YuntaColors.surfaceBlue : YuntaColors.surfaceWhite,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: selected ? YuntaColors.primary : YuntaColors.outlineSoft,
-        ),
-      ),
-      child: InkWell(
-        onTap: enabled ? () => setState(() => _coordinationMode = value) : null,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Icon(icon, color: YuntaColors.primary),
-              const SizedBox(width: 11),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: Theme.of(context).textTheme.titleSmall),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              Radio<String>(
-                value: value,
-                groupValue: _coordinationMode,
-                onChanged: enabled
-                    ? (next) => setState(() => _coordinationMode = next!)
-                    : null,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _typeHeading(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: YuntaColors.surfaceWhite,
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .6)),
-    ),
-    child: Row(
-      children: [
-        Icon(
-          widget.type.icon,
-          size: 28,
-          color: _emergency ? YuntaColors.danger : YuntaColors.primary,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.type.category.label,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              Text(
-                widget.type.publishLabel ?? widget.type.label,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ],
-          ),
-        ),
-        if (_emergency)
-          const Chip(
-            label: Text('Emergencia'),
-            avatar: Icon(Icons.warning_amber_rounded, size: 18),
-            backgroundColor: YuntaColors.dangerSoft,
-            labelStyle: TextStyle(color: YuntaColors.danger),
-          ),
-      ],
-    ),
-  );
-
-  bool _containsPhone(String text) =>
-      RegExp(r'(?<!\d)(?:\+?51[\s-]?)?9\d{2}[\s-]?\d{3}[\s-]?\d{3}(?!\d)')
-          .hasMatch(text);
 }

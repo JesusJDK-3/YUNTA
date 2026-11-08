@@ -12,7 +12,9 @@ material and must never become seeded user data.
 
 | Role | Color | Use |
 | --- | --- | --- |
-| Canvas | `#F4FAFF` | Main screen background |
+| Canvas | `#F4FAFF` | Secondary screens |
+| Registration canvas | `#F1FAF5` | Registration flow |
+| Home canvas | `#BCE8C4` | Mint-green neighborhood wall |
 | Surface | `#FBFEFD` / `#FFFFFF` | Cards, forms, sheets |
 | Ink | `#1A5268` | Brand text and icons |
 | Strong ink | `#001F2A` | Headings and text on aqua actions |
@@ -40,19 +42,42 @@ states. Type follows the reference scale through Android's native sans face.
 
 ## Screen compositions
 
-- Registration pairs the Yunta mark and welcome illustration with the name,
-  private phone, GPS/map actions, and a live preview only after a real point is
-  selected. The preview shows the 500 m radius, not a neighborhood name.
-- The wall places the radius and greeting above horizontal category controls,
-  real emergency notices, tappable post cards, the publish action, and existing
-  Muro/Actividad destinations.
+- Registration centers the circular Y mark, community badge, and welcome copy
+  above separate profile and location panels. It shows the real 500 m map only
+  after GPS or a map point is selected, never a neighborhood name.
+- The wall uses the approved mint-green canvas, a compact Yunta/radius/profile
+  header, greeting and a real location-source label, three horizontal category
+  filters with live counts, tappable white announcement cards, and a centered
+  publish action above Muro/Casos navigation. Notifications stay in the header.
+- Emergency cards use the brick-red alert treatment and may show an attached
+  photo. Post photos are optional and use private Supabase Storage. Never show a
+  neighborhood name, street label, invented avatar, sample review, or sample post.
 - The publish sheet stays grouped by category. Its editor uses separate cards
   for post content, coordination mode, and the real post location, with the
   submit action anchored at the bottom.
-- Detail separates the post identity, author, status and distance facts,
-  description, and eligible coordination actions. Eligible recipients can
-  open the optional rating flow after an individual case is resolved.
-- Chat keeps the actual post title and status visible, sorts history oldest to
-  newest, and keeps the message composer fixed below the scrollable history.
+- Detail follows the selected reference with the real post type, relative
+  publish time, title, author, description, mode, participants, approximate
+  distance, and live status. Keep photos optional and show only eligible
+  coordination actions; show the author's pending support offers immediately
+  after the summary, with the whole offer card clearly tappable to accept and
+  open chat. Omit fake case IDs, unrecorded duration, protected community
+  perimeter, map, and delivery zone. Eligible recipients can open the optional
+  rating flow after an individual case is resolved.
+- Chat uses a participant header, an actual case-status strip, and a working
+  details action. Individual chats show the real counterpart name; group chats
+  show the real participant count. Never imply online presence, encryption, or
+  read receipts when those features are not implemented.
+- Chat history is chronological, labels incoming messages with the real sender
+  name, and keeps the composer fixed below the scrollable history. The author
+  can finish an active case from the status strip. Do not show a meeting-point
+  map unless a real agreed point is stored for that case. Reopening an
+  individual case starts a separate conversation so a new helper cannot see
+  the previous helper's private messages.
 - Rating asks for an optional 1–5 score and comment; eligibility and storage
   remain enforced by the existing Supabase RPC.
+
+For registration, follow the user's latest reference: pale mint canvas,
+centered circular Y mark, community badge, separate white profile and location
+panels, country-code badge, privacy notes, actual 500 m map preview, fixed
+primary action, and a short working tutorial link. Keep the logo Y; do not copy
+the heart mark, sample neighborhood name, or sample city from the reference.

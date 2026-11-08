@@ -1,4 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
+
+import 'post_image_service.dart';
 
 class PostRepository {
   const PostRepository(this._client);
@@ -10,15 +13,41 @@ class PostRepository {
       'nearby_posts',
       params: {'p_category': null},
     );
-    return (result as List<dynamic>)
+    final posts = (result as List<dynamic>)
         .map((row) => Map<String, dynamic>.from(row as Map))
         .toList(growable: false);
+    final imageUrls = await PostImageService(_client).signedUrlsFor(
+      posts.map((post) => post['id'] as String).toList(growable: false),
+    );
+    return [
+      for (final post in posts) {...post, 'image_url': imageUrls[post['id']]},
+    ];
   }
 
   Future<Map<String, dynamic>> loadDetail(String id) async {
     final result = await _client.rpc(
       'get_post_detail',
       params: {'p_post_id': id},
+    );
+    final post = Map<String, dynamic>.from(result as Map);
+    final imageUrls = await PostImageService(_client).signedUrlsFor([id]);
+    return {...post, 'image_url': imageUrls[id]};
+  }
+
+  Future<void> attachImage(String postId, XFile image) =>
+      PostImageService(_client).attachToPost(postId, image);
+
+  Future<List<Map<String, dynamic>>> loadMyCases() async {
+    final result = await _client.rpc('my_case_threads');
+    return (result as List<dynamic>)
+        .map((row) => Map<String, dynamic>.from(row as Map))
+        .toList(growable: false);
+  }
+
+  Future<Map<String, dynamic>> loadChatContext(String postId) async {
+    final result = await _client.rpc(
+      'get_chat_context',
+      params: {'p_post_id': postId},
     );
     return Map<String, dynamic>.from(result as Map);
   }

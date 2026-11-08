@@ -12,6 +12,9 @@ import '../posts/post_composer_screen.dart';
 import '../posts/post_detail_screen.dart';
 import '../posts/post_repository.dart';
 import '../posts/post_type_sheet.dart';
+import 'home_bottom_bar.dart';
+import 'home_cases_screen.dart';
+import 'home_feed_header.dart';
 import 'home_feed_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -44,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       unawaited(PushNotificationService.instance.refreshAfterResume());
+      unawaited(_loadPosts());
     }
   }
 
@@ -78,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Future<void> _publish() async {
     final type = await showPostTypeSheet(context);
     if (type == null || !mounted) return;
-    final published = await Navigator.of(context).push<bool>(
+    final result = await Navigator.of(context).push<PostPublishResult>(
       MaterialPageRoute(
         builder: (_) => PostComposerScreen(
           type: type,
@@ -86,14 +90,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ),
       ),
     );
-    if (published != true || !mounted) return;
+    if (result == null || !mounted) return;
     setState(() => _category = type.category);
     await _loadPosts(showLoader: true);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Aviso publicado en Yunta.')),
-      );
-    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result == PostPublishResult.photoUploadFailed
+              ? 'Aviso publicado. La foto no se pudo guardar.'
+              : 'Aviso publicado en Yunta.',
+        ),
+      ),
+    );
   }
 
   Future<void> _openDetail(String postId) async {
@@ -103,37 +112,51 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (mounted) await _loadPosts();
   }
 
+  Future<void> _openCases() async {
+    await Navigator.of(context)
+        .push<void>(MaterialPageRoute(builder: (_) => const HomeCasesScreen()));
+  }
+
   void _scrollToTop() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        0,
-        duration: const Duration(milliseconds: 260),
-        curve: Curves.easeOutCubic,
-      );
-    }
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final counts = {
+      for (final category in PostCategory.values)
+        category: _posts
+            .where((post) => post['category'] == category.databaseValue)
+            .length,
+    };
+    final emergency = _posts.cast<Map<String, dynamic>?>().firstWhere(
+      (post) => post?['category'] == PostCategory.emergency.databaseValue,
+      orElse: () => null,
+    );
     final visiblePosts = _posts
-        .where((post) => post['category'] == _category.databaseValue)
+        .where((post) {
+          if (post['category'] != _category.databaseValue) return false;
+          return _category != PostCategory.emergency ||
+              post['id'] != emergency?['id'];
+        })
         .toList(growable: false);
-    final emergencyCount = _posts
-        .where((post) => post['category'] == 'emergency')
-        .length;
 
     return Scaffold(
+      backgroundColor: YuntaColors.homeCanvas,
       bottomNavigationBar: SafeArea(
         top: false,
-        child: HomeBottomBar(onWallTap: _scrollToTop),
+        child: HomeBottomBar(onWallTap: _scrollToTop, onCasesTap: _openCases),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
         onPressed: _publish,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Publicar'),
-        backgroundColor: YuntaColors.action,
-        foregroundColor: YuntaColors.inkStrong,
+        tooltip: 'Publicar aviso',
+        child: const Icon(Icons.add_rounded, size: 31),
       ),
       body: SafeArea(
         child: Center(
@@ -145,32 +168,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               child: ListView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(22, 18, 22, 100),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
                 children: [
-                  HomeFeedHeader(displayName: widget.profile.displayName),
-                  const SizedBox(height: 24),
+                  HomeFeedHeader(
+                    displayName: widget.profile.displayName,
+                    locationSource: widget.profile.locationSource,
+                  ),
+                  const SizedBox(height: 16),
                   HomeCategorySelector(
                     selected: _category,
+                    counts: counts,
                     onSelected: (category) =>
                         setState(() => _category = category),
                   ),
-                  if (emergencyCount > 0 && _category != PostCategory.emergency)
-                    HomeEmergencyBanner(
-                      count: emergencyCount,
-                      onTap: () =>
-                          setState(() => _category = PostCategory.emergency),
-                    ),
-                  const SizedBox(height: 22),
-                  Text(
-                    _category == PostCategory.help
-                        ? 'Ayuda vecinal'
-                        : _category.label,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 14),
                   if (_loading)
                     const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 42),
+                      padding: EdgeInsets.symmetric(vertical: 38),
                       child: Center(child: CircularProgressIndicator()),
                     )
                   else if (_error != null)
@@ -178,16 +191,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       message: _error!,
                       onRetry: () => _loadPosts(showLoader: true),
                     )
-                  else if (visiblePosts.isEmpty)
-                    HomeEmptyState(category: _category)
-                  else
-                    for (final post in visiblePosts) ...[
+                  else ...[
+                    if (emergency != null) ...[
+                      const SizedBox(height: 4),
                       PostCard(
-                        post: post,
-                        onTap: () => _openDetail(post['id'] as String),
+                        post: emergency,
+                        featuredEmergency: true,
+                        onTap: () => _openDetail(emergency['id'] as String),
                       ),
-                      const SizedBox(height: 14),
                     ],
+                    if (visiblePosts.isEmpty &&
+                        !(_category == PostCategory.emergency &&
+                            emergency != null)) ...[
+                      const SizedBox(height: 16),
+                      HomeEmptyState(category: _category),
+                    ] else
+                      for (final post in visiblePosts) ...[
+                        const SizedBox(height: 12),
+                        PostCard(
+                          post: post,
+                          onTap: () => _openDetail(post['id'] as String),
+                        ),
+                      ],
+                  ],
                 ],
               ),
             ),

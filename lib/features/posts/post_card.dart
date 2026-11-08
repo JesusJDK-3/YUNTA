@@ -4,10 +4,16 @@ import '../../core/theme/yunta_theme.dart';
 import 'post_catalog.dart';
 
 class PostCard extends StatelessWidget {
-  const PostCard({required this.post, required this.onTap, super.key});
+  const PostCard({
+    required this.post,
+    required this.onTap,
+    this.featuredEmergency = false,
+    super.key,
+  });
 
   final Map<String, dynamic> post;
   final VoidCallback onTap;
+  final bool featuredEmergency;
 
   @override
   Widget build(BuildContext context) {
@@ -15,176 +21,239 @@ class PostCard extends StatelessWidget {
     final emergency = post['category'] == 'emergency';
     final active = post['status'] == 'open' || post['status'] == 'coordinating';
     final distance = (post['distance_m'] as num?)?.round();
-    final mode = post['coordination_mode'] == 'group' ? 'Grupal' : 'Individual';
     final members = (post['member_count'] as num?)?.toInt() ?? 0;
     final recommendations =
         (post['recommendation_count'] as num?)?.toInt() ?? 0;
     final author = post['author_name'] as String? ?? 'Vecino';
-    final accent = emergency ? YuntaColors.danger : YuntaColors.primary;
+    final imageUrl = post['image_url'] as String?;
+    final elapsed = emergency ? _elapsed(post['created_at']) : null;
 
     return Material(
-      color: YuntaColors.surfaceWhite,
+      color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: BorderSide(
-          color: emergency
-              ? YuntaColors.danger.withValues(alpha: .5)
-              : YuntaColors.outlineSoft,
-        ),
+        borderRadius: BorderRadius.circular(featuredEmergency ? 22 : 20),
+        side: const BorderSide(color: YuntaColors.outlineSoft),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(17),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(15, 14, 15, 0),
+              child: Row(
                 children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: emergency
-                          ? YuntaColors.dangerSoft
-                          : YuntaColors.surfaceBlue,
-                      borderRadius: BorderRadius.circular(17),
+                  if (emergency)
+                    _Tag(
+                      icon: Icons.warning_amber_rounded,
+                      label: 'Alerta vecinal',
+                      foreground: YuntaColors.danger,
+                      background: YuntaColors.dangerSoft,
+                    )
+                  else
+                    _Tag(
+                      icon: type?.icon ?? Icons.campaign_outlined,
+                      label: type?.label ?? 'Aviso vecinal',
+                      foreground: YuntaColors.primary,
+                      background: YuntaColors.surfaceMint,
                     ),
-                    child: Icon(
-                      type?.icon ?? Icons.campaign_outlined,
-                      color: accent,
-                      size: 26,
+                  const SizedBox(width: 8),
+                  if (distance != null)
+                    Flexible(
+                      child: _CompactFact(label: _distanceLabel(distance)),
                     ),
+                  if (elapsed != null) ...[
+                    const SizedBox(width: 6),
+                    Flexible(child: _CompactFact(label: elapsed)),
+                  ],
+                  const Spacer(),
+                  _Tag(
+                    label: post['coordination_mode'] == 'group'
+                        ? 'Grupal'
+                        : 'Individual',
+                    foreground: YuntaColors.primary,
+                    background: YuntaColors.surfaceMint,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      type?.publishLabel ?? type?.label ?? 'Aviso vecinal',
-                      style: Theme.of(context).textTheme.titleMedium
-                          ?.copyWith(color: accent),
-                    ),
-                  ),
-                  _ModePill(label: mode),
                 ],
               ),
-              const SizedBox(height: 15),
-              Text(
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 11, 16, 0),
+              child: Text(
                 post['title'] as String? ?? '',
-                style: Theme.of(context).textTheme.titleLarge,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: YuntaColors.ink,
+                  fontSize: featuredEmergency ? 19 : 18,
+                ),
               ),
-              const SizedBox(height: 5),
-              Text(
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 5, 16, 0),
+              child: Text(
                 post['description'] as String? ?? '',
-                maxLines: 3,
+                maxLines: featuredEmergency ? 3 : 3,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
-              const SizedBox(height: 14),
-              Wrap(
-                spacing: 12,
-                runSpacing: 8,
+            ),
+            if (imageUrl != null && imageUrl.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.network(
+                    imageUrl,
+                    width: double.infinity,
+                    height: featuredEmergency ? 154 : 138,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+            ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 13, 16, 14),
+              child: Row(
                 children: [
-                  if (distance != null)
-                    _Fact(
-                      icon: Icons.location_on_outlined,
-                      label: 'A $distance m',
-                    ),
-                  _Fact(
-                    icon: Icons.circle,
-                    iconSize: 9,
-                    label: postStatusLabel(post['status'] as String? ?? ''),
+                  Icon(
+                    Icons.circle,
+                    size: 8,
                     color: active ? YuntaColors.success : YuntaColors.muted,
                   ),
-                  if (members > 0)
-                    _Fact(
-                      icon: Icons.people_outline,
-                      label: '$members ${members == 1 ? 'vecino' : 'vecinos'}',
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      postStatusLabel(post['status'] as String? ?? ''),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: active ? YuntaColors.success : YuntaColors.muted,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  if (post['category'] == 'products_services')
-                    _Fact(
-                      icon: Icons.thumb_up_alt_outlined,
-                      label: '$recommendations recomendaciones',
+                  ),
+                  if (members > 0) ...[
+                    const Icon(
+                      Icons.people_alt_outlined,
+                      size: 17,
+                      color: YuntaColors.primary,
                     ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              const Divider(height: 1),
-              const SizedBox(height: 11),
-              Row(
-                children: [
+                    const SizedBox(width: 4),
+                    Text('$members ${members == 1 ? 'vecino' : 'vecinos'}'),
+                  ],
+                  if (recommendations > 0 &&
+                      post['category'] == 'products_services') ...[
+                    const Icon(
+                      Icons.thumb_up_alt_outlined,
+                      size: 17,
+                      color: YuntaColors.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text('$recommendations'),
+                  ],
+                  const SizedBox(width: 9),
                   CircleAvatar(
                     radius: 15,
                     backgroundColor: YuntaColors.surfaceMint,
                     child: Text(
-                      author.isEmpty
+                      author.trim().isEmpty
                           ? '?'
                           : author.characters.first.toUpperCase(),
                       style: const TextStyle(
                         color: YuntaColors.ink,
                         fontWeight: FontWeight.w700,
-                        fontSize: 13,
+                        fontSize: 12,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
+                  const SizedBox(width: 5),
+                  Flexible(
                     child: Text(
-                      'Publicado por $author',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      author,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: YuntaColors.ink),
                     ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 16,
-                    color: accent,
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  String _distanceLabel(int meters) =>
+      meters == 0 ? 'A menos de 10 m' : 'A $meters m';
+
+  String? _elapsed(Object? value) {
+    if (value is! String) return null;
+    final created = DateTime.tryParse(value)?.toLocal();
+    if (created == null) return null;
+    final difference = DateTime.now().difference(created);
+    if (difference.inMinutes < 1) return 'Ahora';
+    if (difference.inHours < 1) return 'Hace ${difference.inMinutes} min';
+    if (difference.inDays < 1) return 'Hace ${difference.inHours} h';
+    return 'Hace ${difference.inDays} d';
+  }
 }
 
-class _ModePill extends StatelessWidget {
-  const _ModePill({required this.label});
+class _Tag extends StatelessWidget {
+  const _Tag({
+    required this.label,
+    required this.foreground,
+    required this.background,
+    this.icon,
+  });
 
   final String label;
+  final Color foreground;
+  final Color background;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
     decoration: BoxDecoration(
-      color: YuntaColors.surfaceBlue,
-      borderRadius: BorderRadius.circular(30),
+      color: background,
+      borderRadius: BorderRadius.circular(18),
     ),
-    child: Text(label, style: Theme.of(context).textTheme.labelMedium),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null) ...[
+          Icon(icon, size: 14, color: foreground),
+          const SizedBox(width: 4),
+        ],
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: foreground,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    ),
   );
 }
 
-class _Fact extends StatelessWidget {
-  const _Fact({
-    required this.icon,
-    required this.label,
-    this.color = YuntaColors.ink,
-    this.iconSize = 16,
-  });
-
-  final IconData icon;
+class _CompactFact extends StatelessWidget {
+  const _CompactFact({required this.label});
   final String label;
-  final Color color;
-  final double iconSize;
 
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Icon(icon, size: iconSize, color: color),
-      const SizedBox(width: 4),
-      Text(label, style: TextStyle(color: color, fontSize: 13)),
-    ],
+  Widget build(BuildContext context) => Text(
+    label,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+    style: Theme.of(context).textTheme.bodySmall,
   );
 }

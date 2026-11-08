@@ -56,6 +56,7 @@ class PostInteractionActions extends StatelessWidget {
       children.add(_joinButton());
     }
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final child in children) ...[child, const SizedBox(height: 8)],
@@ -98,7 +99,8 @@ class PostInteractionActions extends StatelessWidget {
     final label = group
         ? 'Unirme a la coordinación'
         : switch (type) {
-            'help_request' || 'urgent_request' => 'Puedo ayudar',
+            'help_request' => 'AYNI · Brindar apoyo',
+            'urgent_request' => 'Brindar apoyo urgente',
             'service' => 'Solicitar este servicio',
             _ => 'Me interesa',
           };
