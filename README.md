@@ -1,10 +1,23 @@
 # Yunta
 
-Web del barrio para oficios, favores y emergencias. Un anuncio queda publicado. Un caso es una coordinación, con su propio chat.
+Yunta es una aplicación Android nativa hecha con Flutter y Dart. Supabase gestiona la sesión anónima, PostgreSQL, RLS y Realtime. El antiguo sitio PWA se conserva en `legacy-web/`.
 
-La app solo funciona con Supabase. El correo de acceso, las zonas, el muro y el chat viven en ese proyecto.
+En esta copia también sigue la web (`src/`, `npm run dev`) y un cliente Flutter aparte en `app/`.
 
-## Preparar este computador
+## Preparación
+
+1. Instala Flutter y Android Studio con JDK 17.
+2. Copia `supabase.defines.example.json` a `.env.json`.
+3. En `.env.json`, coloca la URL y la publishable key del proyecto Supabase. Este archivo se excluye de Git; nunca uses una service-role key.
+4. Ejecuta `flutter pub get`.
+
+## Ejecutar y compilar
+
+Abre el proyecto en Android Studio, o ejecuta `flutter run --dart-define-from-file=.env.json`. Para generar el APK en modo lanzamiento, ejecuta `./scripts/build-apk.ps1`. El archivo queda en `artifacts/Yunta.apk`.
+
+La aplicación pide permiso de ubicación solo al usar el GPS. El punto elegido se guarda en el perfil privado de Supabase y nunca se muestra en pantalla. También se puede elegir un punto aproximado en el mapa.
+
+## Web de esta copia
 
 ```bash
 npm install
@@ -13,28 +26,12 @@ npm test
 npm run dev
 ```
 
-Completa `.env.local` con la URL y la anon key antes de `npm run dev`.
+Completa `.env.local` con la URL y la anon key antes de `npm run dev`. El cliente de `app/` usa `app/env.example.json` copiado a `app/env.json`.
 
-## Base
+## Hitos
 
-1. Crea un proyecto en Supabase.
-2. En el SQL Editor, ejecuta en orden `supabase/migrations/001_yunta.sql`, `002_yunta_actions.sql` y `003_yunta_detalle.sql`.
-3. En Authentication, deja activo el proveedor Email y el enlace mágico. Desactiva el teléfono.
-4. En Authentication → URL Configuration, pon la dirección pública de la web como Site URL y como Redirect URL. En local también agrega `http://127.0.0.1:5173`.
-5. En los centros de `zones`, dentro de la primera migración, usa los puntos reales del barrio antes de que entre el primer vecino.
-6. Copia la Project URL y la anon key a `.env.local`. En Vercel, las mismas variables van en Settings → Environment Variables. Vuelve a desplegar después de guardarlas.
+- Registro: nombre, celular peruano privado y ubicación GPS o punto del mapa; sesión anónima persistente.
+- Muro: publicaciones reales de Supabase dentro de 500 m, sin datos de ejemplo.
+- Chat: mensajes persistidos y recibidos en tiempo real por Supabase Realtime.
 
-La anon key es pública. La protección está en las funciones SQL: no devuelven coordenadas, el chat solo lo leen quienes están aceptados y el visto bueno exige la misma zona. La service role no se usa en esta web.
-
-Los reportes se leen en el panel de Supabase, con la service role, no con la anon key.
-
-## Qué cubre
-
-- Directorio de productos y oficios, con visto bueno de la misma zona.
-- Muro de ayuda: herramienta, ayuda temporal, donación, habilidad y movilidad.
-- Emergencias a 500 metros, y grupos de apoyo de la zona.
-- Caso entre dos, con aceptación, y caso en grupo para una cuadra.
-- Valoración del receptor al prestador, visible desde la tercera nota.
-- Reportar, bloquear y compartir el número solo dentro del chat.
-- Aviso pendiente de envío si se corta la red, reutilizado con el mismo identificador.
-- El muro rechaza un celular o una calle con número. Eso se comparte en el chat.
+Cada hito se revisa, compila y publica en GitHub antes de continuar con el siguiente.

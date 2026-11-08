@@ -1,0 +1,2 @@
+[functions.send-yunta-push]
+verify_jwt = true
