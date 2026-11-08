@@ -40,9 +40,9 @@ states. Type follows the reference scale through Android's native sans face.
 
 ## Screen compositions
 
-- Registration pairs the Yunta mark and welcome illustration with the name,
-  private phone, GPS/map actions, and a live preview only after a real point is
-  selected. The preview shows the 500 m radius, not a neighborhood name.
+- Registration centers the circular Y mark, community badge, and welcome copy
+  above separate profile and location panels. It shows the real 500 m map only
+  after GPS or a map point is selected, never a neighborhood name.
 - The wall places the radius and greeting above horizontal category controls,
   real emergency notices, tappable post cards, the publish action, and existing
   Muro/Actividad destinations.
@@ -56,3 +56,9 @@ states. Type follows the reference scale through Android's native sans face.
   newest, and keeps the message composer fixed below the scrollable history.
 - Rating asks for an optional 1–5 score and comment; eligibility and storage
   remain enforced by the existing Supabase RPC.
+
+For registration, follow the user's latest reference: pale mint canvas,
+centered circular Y mark, community badge, separate white profile and location
+panels, country-code badge, privacy notes, actual 500 m map preview, fixed
+primary action, and a short working tutorial link. Keep the logo Y; do not copy
+the heart mark, sample neighborhood name, or sample city from the reference.

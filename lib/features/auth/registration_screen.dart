@@ -5,11 +5,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/location/device_location.dart';
 import '../../core/location/location_point.dart';
 import '../../core/theme/yunta_theme.dart';
-import '../../shared/widgets/neighborhood_illustration.dart';
-import '../../shared/widgets/yunta_wordmark.dart';
 import 'location_picker_screen.dart';
 import 'profile_repository.dart';
-import 'registration_location_preview.dart';
+import 'registration_footer_widgets.dart';
+import 'registration_sections.dart';
+import 'registration_tutorial_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({required this.onRegistered, super.key});
@@ -50,7 +50,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       setState(() {
         _point = point;
         _source = 'gps';
-        _settingsForDevice = false;
       });
     } on LocationAccessException catch (error) {
       if (!mounted) return;
@@ -93,7 +92,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
       return;
     }
-    setState(() => _busy = true);
+    setState(() {
+      _busy = true;
+      _locationError = null;
+    });
     try {
       final digits = _phone.text.replaceAll(RegExp(r'\D'), '');
       await ProfileRepository(Supabase.instance.client).saveRegistration(
@@ -110,9 +112,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     } on AuthException {
       _showSaveError('No se pudo crear tu sesión. Revisa tu conexión.');
     } on PostgrestException {
-      _showSaveError(
-        'No se pudo guardar tu perfil. Revisa los datos e inténtalo.',
-      );
+      _showSaveError('No se pudo guardar tu perfil. Inténtalo de nuevo.');
     } catch (_) {
       _showSaveError('No se pudo completar el registro. Inténtalo de nuevo.');
     } finally {
@@ -124,41 +124,59 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     if (mounted) setState(() => _locationError = message);
   }
 
+  void _openTutorial() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => const RegistrationTutorialScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
+    backgroundColor: YuntaColors.registrationCanvas,
+    bottomNavigationBar: RegistrationFooter(
+      busy: _busy,
+      onSubmit: _submit,
+      onTutorial: _openTutorial,
+    ),
     body: SafeArea(
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
-            child: Form(
-              key: _formKey,
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const YuntaWordmark(),
-                  const SizedBox(height: 30),
-                  _welcome(context),
-                  const SizedBox(height: 24),
-                  _profileCard(),
+                  const RegistrationHero(),
+                  const SizedBox(height: 21),
+                  RegistrationPanel(
+                    title: 'Tu perfil vecinal',
+                    icon: Icons.badge_outlined,
+                    child: Column(
+                      children: [
+                        _nameField(),
+                        const SizedBox(height: 15),
+                        _phoneField(),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  _locationSection(context),
+                  RegistrationLocationPanel(
+                    point: _point,
+                    source: _source,
+                    locating: _locating,
+                    busy: _busy,
+                    onUseGps: _useGps,
+                    onChooseMap: _chooseOnMap,
+                  ),
                   if (_locationError != null) ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 11),
                     _locationFeedback(),
                   ],
-                  const SizedBox(height: 22),
-                  FilledButton.icon(
-                    onPressed: _busy ? null : _submit,
-                    icon: _busy
-                        ? const SizedBox.square(
-                            dimension: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.arrow_forward_rounded),
-                    label: Text(_busy ? 'Guardando…' : 'Entrar a Yunta'),
-                  ),
+                  const SizedBox(height: 14),
+                  const RegistrationPrivacyBanner(),
                 ],
               ),
             ),
@@ -168,61 +186,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     ),
   );
 
-  Widget _profileCard() => Container(
-    padding: const EdgeInsets.all(18),
-    decoration: BoxDecoration(
-      color: YuntaColors.surfaceWhite,
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .6)),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(Icons.person_outline, color: YuntaColors.primary),
-            const SizedBox(width: 8),
-            Text('Tu perfil', style: Theme.of(context).textTheme.titleMedium),
-          ],
-        ),
-        const SizedBox(height: 16),
-        _nameField(),
-        const SizedBox(height: 14),
-        _phoneField(),
-      ],
-    ),
-  );
-
-  Widget _welcome(BuildContext context) => Row(
-    children: [
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '¡Hola, vecino!',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 7),
-            const Text('Conecta con vecinos a 500 m de ti.'),
-          ],
-        ),
-      ),
-      const NeighborhoodIllustration(),
-    ],
-  );
-
   Widget _nameField() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const _FieldLabel('Tu nombre'),
-      const SizedBox(height: 8),
+      _fieldCaption('Tu nombre visible', 'Público en el radio'),
+      const SizedBox(height: 7),
       TextFormField(
         controller: _name,
         textCapitalization: TextCapitalization.words,
         textInputAction: TextInputAction.next,
         maxLength: 60,
         decoration: const InputDecoration(
+          filled: true,
+          fillColor: YuntaColors.registrationField,
+          prefixIcon: Icon(Icons.person_outline_rounded),
           hintText: '¿Cómo te llamas?',
           counterText: '',
         ),
@@ -239,74 +216,70 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Widget _phoneField() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const _FieldLabel('Número de celular'),
-      const SizedBox(height: 8),
-      TextFormField(
-        controller: _phone,
-        keyboardType: TextInputType.phone,
-        textInputAction: TextInputAction.done,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(9),
+      _fieldCaption('Número de celular', 'Privado, sin SMS'),
+      const SizedBox(height: 7),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const RegistrationCountryCode(),
+          const SizedBox(width: 9),
+          Expanded(
+            child: TextFormField(
+              controller: _phone,
+              keyboardType: TextInputType.phone,
+              textInputAction: TextInputAction.done,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(9),
+              ],
+              decoration: const InputDecoration(
+                filled: true,
+                fillColor: YuntaColors.registrationField,
+                hintText: '987 654 321',
+                counterText: '',
+              ),
+              validator: (value) => RegExp(r'^9[0-9]{8}$').hasMatch(value ?? '')
+                  ? null
+                  : 'Escribe un celular peruano de 9 dígitos.',
+            ),
+          ),
         ],
-        decoration: const InputDecoration(
-          prefixText: '+51  ',
-          hintText: 'Escribe tu número',
-        ),
-        validator: (value) => RegExp(r'^9[0-9]{8}$').hasMatch(value ?? '')
-            ? null
-            : 'Escribe un celular peruano de 9 dígitos.',
       ),
-      const SizedBox(height: 5),
-      const Text('Tu número queda privado. No enviaremos SMS.'),
+      const SizedBox(height: 11),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: YuntaColors.surfaceMint,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.lock_outline_rounded,
+              size: 19,
+              color: YuntaColors.primary,
+            ),
+            SizedBox(width: 9),
+            Expanded(
+              child: Text(
+                'Tu número es privado y seguro. Solo tú lo administras y '
+                'nunca se muestra a otros vecinos.',
+              ),
+            ),
+          ],
+        ),
+      ),
     ],
   );
 
-  Widget _locationSection(BuildContext context) => Container(
-    padding: const EdgeInsets.all(18),
-    decoration: BoxDecoration(
-      color: YuntaColors.surfaceWhite,
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .6)),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const _FieldLabel('Ubicación'),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          onPressed: _locating ? null : _useGps,
-          icon: _locating
-              ? const SizedBox.square(
-                  dimension: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.location_on_outlined),
-          label: Text(_locating ? 'Buscando ubicación…' : 'Usar mi ubicación'),
-        ),
-        Center(
-          child: TextButton(
-            onPressed: _locating ? null : _chooseOnMap,
-            child: const Text('Elegir en el mapa'),
-          ),
-        ),
-        if (_point != null) ...[
-          RegistrationLocationPreview(point: _point!),
-          const SizedBox(height: 12),
-          const Row(
-            children: [
-              Icon(Icons.check_circle, size: 18, color: YuntaColors.success),
-              SizedBox(width: 7),
-              Text('Ubicación lista', style: TextStyle(color: YuntaColors.ink)),
-            ],
-          ),
-        ],
-        const SizedBox(height: 5),
-        const Text(
-          'Tu ubicación exacta es privada. Se usa para encontrar avisos cercanos.',
-        ),
-      ],
-    ),
+  Widget _fieldCaption(String title, String trailing) => Row(
+    children: [
+      Expanded(
+        child: Text(title, style: Theme.of(context).textTheme.labelLarge),
+      ),
+      Text(trailing, style: Theme.of(context).textTheme.bodySmall),
+    ],
   );
 
   Widget _locationFeedback() => Column(
@@ -327,14 +300,4 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ),
     ],
   );
-}
-
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) =>
-      Text(text, style: Theme.of(context).textTheme.titleMedium);
 }

@@ -130,7 +130,7 @@ La referencia visual original es [Campsite en Refero](https://styles.refero.desi
 
 ### Composición de las pantallas tomada de Stitch
 
-- **Registro:** logotipo Y y bienvenida ilustrada; formulario de nombre y teléfono; botón para usar GPS o elegir un punto en el mapa; vista previa de la ubicación real seleccionada y su radio de 500 m. No solicitar un nombre de barrio.
+- **Registro:** seguir la referencia más reciente con fondo verde menta pálido, emblema circular Y, etiqueta de comunidad, tarjetas separadas para perfil y zona, prefijo +51 y notas de privacidad. Incluir GPS, ajuste del punto en el mapa, vista previa real del radio de 500 m, botón principal y tutorial breve. No sustituir la Y por un corazón ni solicitar o mostrar un nombre de barrio.
 - **Muro:** encabezado con marca y perfil, radio, saludo, selector horizontal de categorías, aviso de emergencia solo cuando existan avisos reales, tarjetas tocables y botón flotante Publicar. La barra inferior solo lleva a las vistas que existen.
 - **Selección y publicación:** hoja inferior agrupada por categorías; formulario visual en secciones para título, descripción, modalidad y ubicación; botón Publicar fijo al pie. Mantener los tipos y acciones disponibles del flujo aprobado.
 - **Detalle:** jerarquía clara entre tipo, modalidad, título, autor, distancia, estado, participantes y descripción. Las acciones de coordinación corresponden al estado y a la relación del vecino con el aviso.
