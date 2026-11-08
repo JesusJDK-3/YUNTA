@@ -8,6 +8,7 @@ import 'post_detail_widgets.dart';
 import 'post_edit_dialog.dart';
 import 'post_interaction_actions.dart';
 import 'post_repository.dart';
+import 'post_rating_screen.dart';
 
 class PostDetailScreen extends StatefulWidget {
   const PostDetailScreen({required this.postId, super.key});
@@ -36,6 +37,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           (!_isAuthor &&
               (_membership == 'accepted' || _membership == 'active')));
   bool get _canAcceptOffers => _status == 'open' || _status == 'coordinating';
+  bool get _canRate {
+    final provider = _post?['provider_name'] as String?;
+    return _status == 'resolved' &&
+        !_group &&
+        provider != null &&
+        provider.trim().isNotEmpty &&
+        _post?['my_rating'] == null;
+  }
 
   @override
   void initState() {
@@ -133,9 +142,26 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           postId: widget.postId,
           title: _post?['title'] as String? ?? 'Coordinación vecinal',
           readOnly: _status == 'resolved',
+          statusLabel: postStatusLabel(_status),
+          group: _group,
         ),
       ),
     );
+  }
+
+  Future<void> _openRating() async {
+    final provider = _post?['provider_name'] as String?;
+    if (!_canRate || provider == null) return;
+    final saved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => PostRatingScreen(
+          postId: widget.postId,
+          title: _post?['title'] as String? ?? '',
+          providerName: provider,
+        ),
+      ),
+    );
+    if (saved == true && mounted) await _load();
   }
 
   void _showError(String message) {
@@ -155,6 +181,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         await _repository.reopen(widget.postId);
       }
       await _load();
+      if (action == 'resolve' && _canRate && mounted) await _openRating();
     } catch (_) {
       _showError('No se pudo actualizar el aviso. Inténtalo de nuevo.');
     } finally {
@@ -186,12 +213,45 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Detalle del aviso')),
+    bottomNavigationBar: _visitorBar(),
     body: _loading
         ? const Center(child: CircularProgressIndicator())
         : _error != null
         ? _errorView()
         : _postView(context),
   );
+
+  Widget? _visitorBar() {
+    if (_post == null || _isAuthor || (!_canChat && !_canAcceptOffers)) {
+      return null;
+    }
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
+        decoration: const BoxDecoration(
+          color: YuntaColors.surfaceWhite,
+          border: Border(top: BorderSide(color: YuntaColors.outlineSoft)),
+        ),
+        child: PostInteractionActions(
+          isAuthor: false,
+          canChat: _canChat,
+          group: _group,
+          status: _status,
+          membership: _membership,
+          type: _post?['type'] as String? ?? '',
+          localAd: _post?['category'] == 'products_services',
+          working: _working,
+          onOpenChat: _openChat,
+          onJoin: _join,
+          onResolve: () => _changeStatus('resolve'),
+          onCancel: _confirmCancel,
+          onReopen: () => _changeStatus('reopen'),
+          onEdit: _editAd,
+        ),
+      ),
+    );
+  }
 
   Widget _errorView() => Center(
     child: Padding(
@@ -221,11 +281,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         .map((item) => Map<String, dynamic>.from(item as Map))
         .toList(growable: false);
     final distance = (post['distance_m'] as num?)?.round();
-    final area = post['area_label'] as String?;
-    final hasArea =
-        area != null &&
-        area.trim().isNotEmpty &&
-        area.trim().toLowerCase() != 'zona aproximada';
+    final locationLabel = distance == null ? '' : 'A $distance m';
     final emergency = post['category'] == 'emergency';
     final active = _status == 'open' || _status == 'coordinating';
     final recommendationCount =
@@ -234,65 +290,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
       children: [
-        Row(
-          children: [
-            Icon(
-              type?.icon ?? Icons.campaign_outlined,
-              color: emergency ? YuntaColors.danger : YuntaColors.ink,
-              size: 28,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                type?.label ?? 'Aviso vecinal',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: emergency ? YuntaColors.danger : YuntaColors.ink,
-                ),
-              ),
-            ),
-            Text(_group ? 'Grupal' : 'Individual'),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Text(
-          post['title'] as String? ?? '',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 9),
-        Text('Publicado por ${post['author_name'] ?? 'Vecino'}'),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 14,
-          runSpacing: 8,
-          children: [
-            PostDetailFact(
-              icon: Icons.location_on_outlined,
-              label: [
-                if (hasArea) area.trim(),
-                if (distance != null) 'A $distance m',
-              ].join(' · '),
-            ),
-            PostDetailFact(
-              icon: Icons.circle,
-              label: postStatusLabel(_status),
-              color: _status == 'open' || _status == 'coordinating'
-                  ? const Color(0xFF368857)
-                  : YuntaColors.muted,
-            ),
-            PostDetailFact(
-              icon: Icons.groups_outlined,
-              label: '${post['member_count'] ?? 0} participantes',
-            ),
-          ],
-        ),
-        const SizedBox(height: 22),
-        Text('Descripción', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Text(
-          post['description'] as String? ?? '',
-          style: Theme.of(context).textTheme.bodyLarge,
+        PostDetailSummaryCard(
+          icon: type?.icon ?? Icons.campaign_outlined,
+          typeLabel: type?.publishLabel ?? type?.label ?? 'Aviso vecinal',
+          mode: _group ? 'Grupal' : 'Individual',
+          title: post['title'] as String? ?? '',
+          author: post['author_name'] as String? ?? 'Vecino',
+          locationLabel: locationLabel,
+          statusLabel: postStatusLabel(_status),
+          statusColor: active ? YuntaColors.success : YuntaColors.muted,
+          memberCount: (post['member_count'] as num?)?.toInt() ?? 0,
+          description: post['description'] as String? ?? '',
+          emergency: emergency,
         ),
         if (emergency) const PostEmergencyNote(),
+        if (_canRate) ...[
+          const SizedBox(height: 16),
+          _ratingCard(post['provider_name'] as String),
+        ],
         if (_isAuthor && offers.isNotEmpty && _canAcceptOffers) ...[
           const SizedBox(height: 26),
           Text(
@@ -321,24 +336,40 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
           ),
         ],
-        const SizedBox(height: 20),
-        PostInteractionActions(
-          isAuthor: _isAuthor,
-          canChat: _canChat,
-          group: _group,
-          status: _status,
-          membership: _membership,
-          type: post['type'] as String? ?? '',
-          localAd: post['category'] == 'products_services',
-          working: _working,
-          onOpenChat: _openChat,
-          onJoin: _join,
-          onResolve: () => _changeStatus('resolve'),
-          onCancel: _confirmCancel,
-          onReopen: () => _changeStatus('reopen'),
-          onEdit: _editAd,
-        ),
+        if (_isAuthor) ...[
+          const SizedBox(height: 20),
+          PostInteractionActions(
+            isAuthor: true,
+            canChat: _canChat,
+            group: _group,
+            status: _status,
+            membership: _membership,
+            type: post['type'] as String? ?? '',
+            localAd: post['category'] == 'products_services',
+            working: _working,
+            onOpenChat: _openChat,
+            onJoin: _join,
+            onResolve: () => _changeStatus('resolve'),
+            onCancel: _confirmCancel,
+            onReopen: () => _changeStatus('reopen'),
+            onEdit: _editAd,
+          ),
+        ],
       ],
     );
   }
+
+  Widget _ratingCard(String provider) => Card(
+    color: YuntaColors.surfaceMint,
+    child: ListTile(
+      leading: const Icon(
+        Icons.star_outline_rounded,
+        color: YuntaColors.primary,
+      ),
+      title: const Text('¿Cómo fue la ayuda?'),
+      subtitle: Text('Valora tu experiencia con $provider.'),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: _working ? null : _openRating,
+    ),
+  );
 }

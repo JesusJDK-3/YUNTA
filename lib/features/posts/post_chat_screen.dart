@@ -8,12 +8,16 @@ class PostChatScreen extends StatefulWidget {
     required this.postId,
     required this.title,
     this.readOnly = false,
+    this.statusLabel = '',
+    this.group = false,
     super.key,
   });
 
   final String postId;
   final String title;
   final bool readOnly;
+  final String statusLabel;
+  final bool group;
 
   @override
   State<PostChatScreen> createState() => _PostChatScreenState();
@@ -74,16 +78,14 @@ class _PostChatScreenState extends State<PostChatScreen> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       title: Text(widget.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-      bottom: const PreferredSize(
-        preferredSize: Size.fromHeight(30),
-        child: Padding(
-          padding: EdgeInsets.only(bottom: 10),
-          child: Text('Chat privado de este aviso'),
-        ),
-      ),
     ),
     body: Column(
       children: [
+        _ChatCaseHeader(
+          statusLabel: widget.statusLabel,
+          group: widget.group,
+          readOnly: widget.readOnly,
+        ),
         Expanded(
           child: StreamBuilder<List<Map<String, dynamic>>>(
             stream: _messages,
@@ -119,6 +121,7 @@ class _PostChatScreenState extends State<PostChatScreen> {
                   return _MessageBubble(
                     body: message['body'] as String? ?? '',
                     mine: message['sender_id'] == _userId,
+                    time: _messageTime(message['created_at'] as String?),
                   );
                 },
               );
@@ -192,13 +195,77 @@ class _PostChatScreenState extends State<PostChatScreen> {
       );
     });
   }
+
+  String? _messageTime(String? raw) {
+    final sentAt = DateTime.tryParse(raw ?? '')?.toLocal();
+    if (sentAt == null) return null;
+    final hour = sentAt.hour.toString().padLeft(2, '0');
+    final minute = sentAt.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+}
+
+class _ChatCaseHeader extends StatelessWidget {
+  const _ChatCaseHeader({
+    required this.statusLabel,
+    required this.group,
+    required this.readOnly,
+  });
+
+  final String statusLabel;
+  final bool group;
+  final bool readOnly;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+    decoration: BoxDecoration(
+      color: readOnly ? YuntaColors.surfaceMint : YuntaColors.surfaceBlue,
+      borderRadius: BorderRadius.circular(17),
+    ),
+    child: Row(
+      children: [
+        Icon(group ? Icons.groups_outlined : Icons.lock_outline_rounded,
+            color: YuntaColors.primary, size: 21),
+        const SizedBox(width: 9),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                statusLabel.isEmpty ? 'Chat privado de este aviso' : statusLabel,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              if (statusLabel.isNotEmpty)
+                Text(
+                  'Chat privado de este aviso',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+          decoration: BoxDecoration(
+            color: YuntaColors.surfaceWhite,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Text(group ? 'Grupal' : 'Individual'),
+        ),
+      ],
+    ),
+  );
 }
 
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.body, required this.mine});
+  const _MessageBubble({required this.body, required this.mine, this.time});
 
   final String body;
   final bool mine;
+  final String? time;
 
   @override
   Widget build(BuildContext context) => Align(
@@ -208,10 +275,33 @@ class _MessageBubble extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 9),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: mine ? YuntaColors.yellowPale : const Color(0xFFF1F5F6),
+        color: mine ? YuntaColors.action : YuntaColors.surfaceWhite,
         borderRadius: BorderRadius.circular(17),
+        border: mine
+            ? null
+            : Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .55)),
       ),
-      child: Text(body),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            body,
+            style: TextStyle(
+              color: mine ? YuntaColors.inkStrong : YuntaColors.ink,
+            ),
+          ),
+          if (time != null) ...[
+            const SizedBox(height: 3),
+            Text(
+              time!,
+              style: TextStyle(
+                color: mine ? YuntaColors.inkStrong : YuntaColors.muted,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ],
+      ),
     ),
   );
 }

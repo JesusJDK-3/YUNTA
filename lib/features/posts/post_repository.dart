@@ -37,6 +37,21 @@ class PostRepository {
     await _client.rpc('recommend_ad', params: {'p_post_id': id});
   }
 
+  Future<void> rateProvider({
+    required String postId,
+    required int score,
+    required String comment,
+  }) async {
+    await _client.rpc(
+      'rate_provider',
+      params: {
+        'p_post_id': postId,
+        'p_score': score,
+        'p_comment': comment.trim().isEmpty ? null : comment.trim(),
+      },
+    );
+  }
+
   Future<void> resolve(String id) async {
     await _client.rpc('resolve_post', params: {'p_post_id': id});
   }

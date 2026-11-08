@@ -5,10 +5,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/location/device_location.dart';
 import '../../core/location/location_point.dart';
 import '../../core/theme/yunta_theme.dart';
-import '../../shared/widgets/ambient_bubbles.dart';
+import '../../shared/widgets/neighborhood_illustration.dart';
 import '../../shared/widgets/yunta_wordmark.dart';
 import 'location_picker_screen.dart';
 import 'profile_repository.dart';
+import 'registration_location_preview.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({required this.onRegistered, super.key});
@@ -139,11 +140,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   const YuntaWordmark(),
                   const SizedBox(height: 30),
                   _welcome(context),
-                  const SizedBox(height: 26),
-                  _nameField(),
-                  const SizedBox(height: 18),
-                  _phoneField(),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 24),
+                  _profileCard(),
+                  const SizedBox(height: 16),
                   _locationSection(context),
                   if (_locationError != null) ...[
                     const SizedBox(height: 10),
@@ -169,6 +168,31 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     ),
   );
 
+  Widget _profileCard() => Container(
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: YuntaColors.surfaceWhite,
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .6)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.person_outline, color: YuntaColors.primary),
+            const SizedBox(width: 8),
+            Text('Tu perfil', style: Theme.of(context).textTheme.titleMedium),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _nameField(),
+        const SizedBox(height: 14),
+        _phoneField(),
+      ],
+    ),
+  );
+
   Widget _welcome(BuildContext context) => Row(
     children: [
       Expanded(
@@ -184,7 +208,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ],
         ),
       ),
-      const AmbientBubbles(),
+      const NeighborhoodIllustration(),
     ],
   );
 
@@ -238,40 +262,51 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     ],
   );
 
-  Widget _locationSection(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const _FieldLabel('Ubicación'),
-      const SizedBox(height: 8),
-      OutlinedButton.icon(
-        onPressed: _locating ? null : _useGps,
-        icon: _locating
-            ? const SizedBox.square(
-                dimension: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.location_on_outlined),
-        label: Text(_locating ? 'Buscando ubicación…' : 'Usar mi ubicación'),
-      ),
-      Center(
-        child: TextButton(
-          onPressed: _locating ? null : _chooseOnMap,
-          child: const Text('Elegir en el mapa'),
+  Widget _locationSection(BuildContext context) => Container(
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: YuntaColors.surfaceWhite,
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .6)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _FieldLabel('Ubicación'),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: _locating ? null : _useGps,
+          icon: _locating
+              ? const SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.location_on_outlined),
+          label: Text(_locating ? 'Buscando ubicación…' : 'Usar mi ubicación'),
         ),
-      ),
-      if (_point != null)
-        const Row(
-          children: [
-            Icon(Icons.check_circle, size: 18, color: Color(0xFF3E8A58)),
-            SizedBox(width: 7),
-            Text('Ubicación lista', style: TextStyle(color: YuntaColors.ink)),
-          ],
+        Center(
+          child: TextButton(
+            onPressed: _locating ? null : _chooseOnMap,
+            child: const Text('Elegir en el mapa'),
+          ),
         ),
-      const SizedBox(height: 5),
-      const Text(
-        'Tu ubicación exacta es privada. Se usa para encontrar avisos cercanos.',
-      ),
-    ],
+        if (_point != null) ...[
+          RegistrationLocationPreview(point: _point!),
+          const SizedBox(height: 12),
+          const Row(
+            children: [
+              Icon(Icons.check_circle, size: 18, color: YuntaColors.success),
+              SizedBox(width: 7),
+              Text('Ubicación lista', style: TextStyle(color: YuntaColors.ink)),
+            ],
+          ),
+        ],
+        const SizedBox(height: 5),
+        const Text(
+          'Tu ubicación exacta es privada. Se usa para encontrar avisos cercanos.',
+        ),
+      ],
+    ),
   );
 
   Widget _locationFeedback() => Column(

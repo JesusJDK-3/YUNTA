@@ -64,17 +64,18 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
           return const Center(child: Text('Aún no tienes notificaciones.'));
         }
         return ListView.separated(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           itemCount: notifications.length,
-          separatorBuilder: (_, _) => const Divider(height: 1, indent: 72),
+          separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             final notification = notifications[index];
             final unread = notification['read_at'] == null;
             return ListTile(
               leading: CircleAvatar(
                 backgroundColor: unread
-                    ? YuntaColors.yellowPale
-                    : const Color(0xFFF1F5F6),
+                    ? YuntaColors.surfaceBlue
+                    : YuntaColors.surfaceMint,
+                foregroundColor: YuntaColors.primary,
                 child: Icon(_iconFor(notification['kind'] as String? ?? '')),
               ),
               title: Text(
@@ -83,8 +84,19 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
               ),
               subtitle: Text('En «${notification['post_title'] ?? 'Aviso'}»'),
               trailing: unread
-                  ? const Icon(Icons.circle, size: 10, color: YuntaColors.ink)
+                  ? const Icon(
+                      Icons.circle,
+                      size: 10,
+                      color: YuntaColors.primary,
+                    )
                   : null,
+              tileColor: unread ? YuntaColors.surfaceWhite : YuntaColors.canvas,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: YuntaColors.outlineSoft.withValues(alpha: .55),
+                ),
+              ),
               onTap: () => _open(notification),
             );
           },
