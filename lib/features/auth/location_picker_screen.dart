@@ -6,9 +6,14 @@ import '../../core/location/location_point.dart';
 import '../../core/theme/yunta_theme.dart';
 
 class LocationPickerScreen extends StatefulWidget {
-  const LocationPickerScreen({this.initialPoint, super.key});
+  const LocationPickerScreen({
+    this.initialPoint,
+    this.isPostLocation = false,
+    super.key,
+  });
 
   final LocationPoint? initialPoint;
+  final bool isPostLocation;
 
   @override
   State<LocationPickerScreen> createState() => _LocationPickerScreenState();
@@ -33,9 +38,13 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     appBar: AppBar(title: const Text('Elige tu ubicación')),
     body: Column(
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(20, 4, 20, 12),
-          child: Text('Mueve el mapa y toca el punto aproximado donde vives.'),
+          child: Text(
+            widget.isPostLocation
+                ? 'Mueve el mapa y toca el punto aproximado del aviso.'
+                : 'Mueve el mapa y toca el punto aproximado donde vives.',
+          ),
         ),
         Expanded(
           child: FlutterMap(
@@ -86,12 +95,16 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   padding: EdgeInsets.only(bottom: 10),
                   child: Text('Toca el mapa para elegir el punto.'),
                 ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(bottom: 12),
                 child: Text(
-                  'OpenStreetMap recibe solicitudes para cargar la zona visible '
-                  'del mapa. Al completar el registro, Yunta guarda el punto '
-                  'elegido en tu perfil privado.',
+                  widget.isPostLocation
+                      ? 'OpenStreetMap recibe solicitudes para cargar la zona '
+                            'visible del mapa. Yunta guarda este punto en el '
+                            'aviso y muestra solo una distancia aproximada.'
+                      : 'OpenStreetMap recibe solicitudes para cargar la zona '
+                            'visible del mapa. Al completar el registro, Yunta '
+                            'guarda el punto elegido en tu perfil privado.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12),
                 ),

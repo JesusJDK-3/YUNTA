@@ -13,7 +13,7 @@ import 'profile_repository.dart';
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({required this.onRegistered, super.key});
 
-  final ValueChanged<String> onRegistered;
+  final ValueChanged<RegisteredProfile> onRegistered;
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
@@ -101,7 +101,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         location: _point!,
         locationSource: _source,
       );
-      if (mounted) widget.onRegistered(_name.text.trim());
+      if (mounted) {
+        widget.onRegistered(
+          RegisteredProfile(displayName: _name.text.trim(), location: _point!),
+        );
+      }
     } on AuthException {
       _showSaveError('No se pudo crear tu sesión. Revisa tu conexión.');
     } on PostgrestException {

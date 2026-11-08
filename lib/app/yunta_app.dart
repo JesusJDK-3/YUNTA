@@ -31,42 +31,41 @@ class SessionGate extends StatefulWidget {
 }
 
 class _SessionGateState extends State<SessionGate> {
-  late Future<String?> _profileName;
+  late Future<RegisteredProfile?> _profile;
 
   @override
   void initState() {
     super.initState();
-    _profileName = _loadProfileName();
+    _profile = _loadProfile();
   }
 
-  Future<String?> _loadProfileName() async {
+  Future<RegisteredProfile?> _loadProfile() async {
     final client = Supabase.instance.client;
     if (client.auth.currentSession == null) return null;
-    final profile = await ProfileRepository(client).getMyProfile();
-    return profile?['display_name'] as String?;
+    return ProfileRepository(client).getMyProfile();
   }
 
-  void _registered(String name) => setState(() {
-    _profileName = Future.value(name);
+  void _registered(RegisteredProfile profile) => setState(() {
+    _profile = Future.value(profile);
   });
 
   void _retry() => setState(() {
-    _profileName = _loadProfileName();
+    _profile = _loadProfile();
   });
 
   @override
-  Widget build(BuildContext context) => FutureBuilder<String?>(
-    future: _profileName,
+  Widget build(BuildContext context) => FutureBuilder<RegisteredProfile?>(
+    future: _profile,
     builder: (context, snapshot) {
       if (snapshot.hasError) return ProfileLoadError(onRetry: _retry);
       if (snapshot.connectionState != ConnectionState.done) {
         return const LoadingScreen();
       }
-      final name = snapshot.data;
-      if (name == null) {
+      final profile = snapshot.data;
+      if (profile == null) {
         return RegistrationScreen(onRegistered: _registered);
       }
-      return HomeScreen(displayName: name);
+      return HomeScreen(profile: profile);
     },
   );
 }

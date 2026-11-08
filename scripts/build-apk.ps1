@@ -22,15 +22,15 @@ if (-not $flutter) { throw 'No se encontró Flutter. Añade flutter/bin al PATH.
 
 Push-Location $projectRoot
 try {
-  & $flutter.Source build apk --debug "--dart-define-from-file=$definesPath"
+  & $flutter.Source build apk --release "--dart-define-from-file=$definesPath"
   if ($LASTEXITCODE -ne 0) { throw 'Flutter no pudo compilar el APK.' }
 
-  $apk = Join-Path $projectRoot 'build\app\outputs\flutter-apk\app-debug.apk'
+  $apk = Join-Path $projectRoot 'build\app\outputs\flutter-apk\app-release.apk'
   $outputDirectory = Join-Path $projectRoot 'artifacts'
   New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
-  Copy-Item -LiteralPath $apk -Destination (Join-Path $outputDirectory 'Yunta-debug.apk') -Force
+  Copy-Item -LiteralPath $apk -Destination (Join-Path $outputDirectory 'Yunta.apk') -Force
 } finally {
   Pop-Location
 }
 
-Write-Output 'APK generado en artifacts/Yunta-debug.apk.'
+Write-Output 'APK de lanzamiento generado en artifacts/Yunta.apk.'

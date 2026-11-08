@@ -7,10 +7,22 @@ class ProfileRepository {
 
   final SupabaseClient _client;
 
-  Future<Map<String, dynamic>?> getMyProfile() async {
+  Future<RegisteredProfile?> getMyProfile() async {
     final result = await _client.rpc('get_my_profile');
     if (result == null) return null;
-    return Map<String, dynamic>.from(result as Map);
+    final profile = Map<String, dynamic>.from(result as Map);
+    final latitude = profile['latitude'] as num?;
+    final longitude = profile['longitude'] as num?;
+    if (latitude == null || longitude == null) {
+      throw const FormatException('El perfil no tiene una ubicación válida.');
+    }
+    return RegisteredProfile(
+      displayName: profile['display_name'] as String,
+      location: LocationPoint(
+        latitude: latitude.toDouble(),
+        longitude: longitude.toDouble(),
+      ),
+    );
   }
 
   Future<void> saveRegistration({
@@ -34,4 +46,11 @@ class ProfileRepository {
       },
     );
   }
+}
+
+class RegisteredProfile {
+  const RegisteredProfile({required this.displayName, required this.location});
+
+  final String displayName;
+  final LocationPoint location;
 }

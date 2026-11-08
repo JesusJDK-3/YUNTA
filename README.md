@@ -11,7 +11,7 @@ Yunta es una aplicación Android nativa hecha con Flutter y Dart. Supabase gesti
 
 ## Ejecutar y compilar
 
-Abre el proyecto en Android Studio, o ejecuta `flutter run --dart-define-from-file=.env.json`. Para generar un APK de depuración, ejecuta `./scripts/build-apk.ps1`. El archivo queda en `artifacts/Yunta-debug.apk`.
+Abre el proyecto en Android Studio, o ejecuta `flutter run --dart-define-from-file=.env.json`. Para generar el APK en modo lanzamiento, ejecuta `./scripts/build-apk.ps1`. El archivo queda en `artifacts/Yunta.apk`.
 
 La aplicación pide permiso de ubicación solo al usar el GPS. El punto elegido se guarda en el perfil privado de Supabase y nunca se muestra en pantalla. También se puede elegir un punto aproximado en el mapa.
 
