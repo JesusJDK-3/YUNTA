@@ -1,9 +1,0 @@
-.dart_tool/
-.packages
-build/
-.env
-env.json
-*.iml
-.idea/
-.flutter-plugins
-.flutter-plugins-dependencies

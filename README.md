@@ -1,8 +1,6 @@
-# Yunta
+# Yunta Android
 
 Yunta es una aplicación Android nativa hecha con Flutter y Dart. Supabase gestiona la sesión anónima, PostgreSQL, RLS y Realtime. El antiguo sitio PWA se conserva en `legacy-web/`.
-
-En esta copia también sigue la web (`src/`, `npm run dev`) y un cliente Flutter aparte en `app/`.
 
 ## Preparación
 
@@ -16,17 +14,6 @@ En esta copia también sigue la web (`src/`, `npm run dev`) y un cliente Flutter
 Abre el proyecto en Android Studio, o ejecuta `flutter run --dart-define-from-file=.env.json`. Para generar el APK en modo lanzamiento, ejecuta `./scripts/build-apk.ps1`. El archivo queda en `artifacts/Yunta.apk`.
 
 La aplicación pide permiso de ubicación solo al usar el GPS. El punto elegido se guarda en el perfil privado de Supabase y nunca se muestra en pantalla. También se puede elegir un punto aproximado en el mapa.
-
-## Web de esta copia
-
-```bash
-npm install
-cp .env.example .env.local
-npm test
-npm run dev
-```
-
-Completa `.env.local` con la URL y la anon key antes de `npm run dev`. El cliente de `app/` usa `app/env.example.json` copiado a `app/env.json`.
 
 ## Hitos
 

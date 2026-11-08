@@ -11,7 +11,6 @@ build/
 *.iml
 .env
 .env.*
-!.env.example
 !supabase.defines.example.json
 .env.json
 .vercel/
@@ -29,6 +28,5 @@ android/app/.cxx/
 android/app/build/
 .gradle/
 *.tsbuildinfo
-*.log
 .DS_Store
 Thumbs.db
