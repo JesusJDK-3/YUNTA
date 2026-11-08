@@ -106,7 +106,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       );
       if (mounted) {
         widget.onRegistered(
-          RegisteredProfile(displayName: _name.text.trim(), location: _point!),
+          RegisteredProfile(
+            displayName: _name.text.trim(),
+            location: _point!,
+            locationSource: _source,
+          ),
         );
       }
     } on AuthException {

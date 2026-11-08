@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/yunta_theme.dart';
+
 class PostEditDialog extends StatefulWidget {
   const PostEditDialog({
     required this.title,
@@ -82,7 +84,7 @@ class _PostEditDialogState extends State<PostEditDialog> {
             decoration: const InputDecoration(labelText: 'Descripción'),
           ),
           if (_error != null)
-            Text(_error!, style: const TextStyle(color: Colors.red)),
+            Text(_error!, style: const TextStyle(color: YuntaColors.danger)),
         ],
       ),
     ),

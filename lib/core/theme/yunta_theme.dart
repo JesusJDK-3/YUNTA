@@ -24,6 +24,7 @@ abstract final class YuntaColors {
   static const registrationCanvas = Color(0xFFF1FAF5);
   static const registrationField = Color(0xFFEBF5F2);
   static const registrationSky = Color(0xFFD8F0FC);
+  static const homeCanvas = Color(0xFFBCE8C4);
 }
 
 abstract final class YuntaTheme {
@@ -166,9 +167,9 @@ abstract final class YuntaTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: YuntaColors.surfaceWhite,
-        selectedColor: YuntaColors.primary,
+        selectedColor: YuntaColors.action,
         disabledColor: YuntaColors.surfaceBlue,
-        checkmarkColor: Colors.white,
+        checkmarkColor: YuntaColors.inkStrong,
         labelStyle: const TextStyle(color: YuntaColors.inkStrong),
         secondaryLabelStyle: const TextStyle(color: YuntaColors.inkStrong),
         side: const BorderSide(color: YuntaColors.outlineSoft),

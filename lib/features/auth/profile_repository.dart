@@ -22,6 +22,7 @@ class ProfileRepository {
         latitude: latitude.toDouble(),
         longitude: longitude.toDouble(),
       ),
+      locationSource: profile['location_source'] as String? ?? 'manual',
     );
   }
 
@@ -49,8 +50,13 @@ class ProfileRepository {
 }
 
 class RegisteredProfile {
-  const RegisteredProfile({required this.displayName, required this.location});
+  const RegisteredProfile({
+    required this.displayName,
+    required this.location,
+    required this.locationSource,
+  });
 
   final String displayName;
   final LocationPoint location;
+  final String locationSource;
 }

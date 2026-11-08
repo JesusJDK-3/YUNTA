@@ -12,7 +12,9 @@ material and must never become seeded user data.
 
 | Role | Color | Use |
 | --- | --- | --- |
-| Canvas | `#F4FAFF` | Main screen background |
+| Canvas | `#F4FAFF` | Secondary screens |
+| Registration canvas | `#F1FAF5` | Registration flow |
+| Home canvas | `#BCE8C4` | Mint-green neighborhood wall |
 | Surface | `#FBFEFD` / `#FFFFFF` | Cards, forms, sheets |
 | Ink | `#1A5268` | Brand text and icons |
 | Strong ink | `#001F2A` | Headings and text on aqua actions |
@@ -43,9 +45,13 @@ states. Type follows the reference scale through Android's native sans face.
 - Registration centers the circular Y mark, community badge, and welcome copy
   above separate profile and location panels. It shows the real 500 m map only
   after GPS or a map point is selected, never a neighborhood name.
-- The wall places the radius and greeting above horizontal category controls,
-  real emergency notices, tappable post cards, the publish action, and existing
-  Muro/Actividad destinations.
+- The wall uses the approved mint-green canvas, a compact Yunta/radius/profile
+  header, greeting and a real location-source label, three horizontal category
+  filters with live counts, tappable white announcement cards, and a centered
+  publish action above Muro/Casos navigation. Notifications stay in the header.
+- Emergency cards use the brick-red alert treatment and may show an attached
+  photo. Post photos are optional and use private Supabase Storage. Never show a
+  neighborhood name, street label, invented avatar, sample review, or sample post.
 - The publish sheet stays grouped by category. Its editor uses separate cards
   for post content, coordination mode, and the real post location, with the
   submit action anchored at the bottom.

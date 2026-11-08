@@ -7,6 +7,7 @@ import 'post_chat_screen.dart';
 import 'post_detail_widgets.dart';
 import 'post_edit_dialog.dart';
 import 'post_interaction_actions.dart';
+import 'post_image_preview.dart';
 import 'post_repository.dart';
 import 'post_rating_screen.dart';
 
@@ -303,6 +304,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           description: post['description'] as String? ?? '',
           emergency: emergency,
         ),
+        if (post['image_url'] is String &&
+            (post['image_url'] as String).isNotEmpty) ...[
+          const SizedBox(height: 16),
+          PostImagePreview(url: post['image_url'] as String),
+        ],
         if (emergency) const PostEmergencyNote(),
         if (_canRate) ...[
           const SizedBox(height: 16),

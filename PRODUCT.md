@@ -27,6 +27,7 @@ Yunta organizes neighborhood help around approximate location and gives each cas
 - The app uses a persistent Supabase anonymous session on Android; registration collects a display name and a validated private phone number, without SMS during the demo.
 - GPS suggests the user's location. A user may mark an approximate point on the map; the app never asks for a neighborhood name.
 - Posts are discovered within 500 meters of the user's location. The public wall shows an approximate zone and distance; exact addresses may be shared during coordination when needed.
+- A neighbor may attach one photo to a post, or publish without a photo. Post images use private storage and are visible only to the author, case participants, and neighbors within the discovery radius.
 - A post can be drafted offline after the app has been opened online. It remains in private native storage until Supabase confirms the save; the app retries with the same post identifier while it is open and internet returns. Live chat requires internet.
 
 ## Capabilities and Constraints

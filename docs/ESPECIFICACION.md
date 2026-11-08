@@ -23,6 +23,8 @@ Cada barrio cuenta con un muro de publicaciones. El vecino puede pedir u ofrecer
 - Filtrar las tres secciones a 500 m desde la ubicación del vecino. La distancia es el criterio de visibilidad; la app no solicita ni muestra nombres de barrio.
 - Cada aviso conserva su propia ubicación, que puede diferir de la ubicación del autor. Mostrar una distancia calculada y redondeada; no mostrar coordenadas exactas ni nombre de barrio.
 - Cada tarjeta presenta título, distancia aproximada y estado, además de si la coordinación es individual o grupal.
+- Se puede adjuntar una foto opcional por aviso. La foto no es requisito para publicar; se guarda en un bucket privado y solo se muestra al autor, a participantes autorizados o a vecinos a 500 m. No se muestran etiquetas de barrio ni dirección obtenidas de la imagen.
+- La barra inferior ofrece Muro, Publicar y Casos. Casos lista solo conversaciones reales ligadas a avisos aceptados o grupales; las notificaciones se abren desde la campana del encabezado.
 - El flujo de publicación debe requerir tres acciones principales desde el muro: Publicar, elegir el tipo y enviar. Descripción y modalidad van en el mismo formulario.
 - Emergencias llevan un ícono y una etiqueta en rojo ladrillo.
 
@@ -73,6 +75,7 @@ Las tablas de usuario se relacionan con `auth.users.id` mediante `user_id`.
 | `private_profiles` | `user_id`, `phone_e164`, `phone_verified_at`, `latitude`, `longitude`, `location_source`, `updated_at` | Teléfono real y ubicación personal, editables por su titular. El teléfono solo lo consulta su titular desde la app. Durante la demo, `phone_verified_at` queda vacío porque SMS está deshabilitado. |
 | `user_settings` | `user_id`, `tutorial_completed_at` | Preferencias personales utilizadas por la app, como si se completó el tutorial. El radio de 500 m es regla de consulta, no una preferencia personal. |
 | `posts` | `id`, `author_id`, `category`, `type`, `title`, `description`, `coordination_mode`, `status`, `latitude`, `longitude`, `area_label`, `created_at`, `updated_at`, `closed_at` | Avisos de ayuda, productos/servicios y emergencias. Cada aviso tiene ubicación propia y modalidad individual o grupal. Solo el autor modifica, resuelve, cancela o reabre cuando corresponde. Puede editar o retirar su anuncio de producto o servicio. |
+| `post_images` | `id`, `post_id`, `author_id`, `storage_path`, `created_at` | Referencia opcional a una foto en el bucket privado `yunta-post-images`; una foto como máximo por aviso. RLS permite leerla al autor, miembros autorizados o vecinos dentro del radio de 500 m. |
 | `post_members` | `post_id`, `user_id`, `role`, `status`, `joined_at`, `updated_at` | Autor y vecinos participantes. En modo individual diferencia ofertas pendientes de la persona aceptada; en modo grupal registra participantes. |
 | `messages` | `id`, `post_id`, `sender_id`, `body`, `created_at` | Historial de chat asociado a un caso. Realtime lo entrega a participantes conectados. RLS limita lectura y envío al autor y participantes con acceso. |
 | `recommendations` | `post_id`, `user_id`, `created_at` | Vecino que recomienda un anuncio de producto o servicio. Cada vecino recomienda un anuncio como máximo una vez. |
@@ -121,7 +124,7 @@ La referencia visual original es [Campsite en Refero](https://styles.refero.desi
 
 ## Dirección visual vigente aprobada el 8 de noviembre de 2026
 
-- Aplicar a Flutter el sistema “Vecindad Conectada” del paquete Stitch: fondo claro azulado `#F4FAFF`, tarjetas casi blancas, tinta petróleo y acentos turquesa/menta.
+- Aplicar a Flutter el sistema “Vecindad Conectada” del paquete Stitch: mantener el fondo verde menta `#BCE8C4` en el muro como muestra la referencia elegida, con tarjetas casi blancas, tinta petróleo y acentos turquesa/menta. El registro conserva el verde menta pálido `#F1FAF5`; las vistas secundarias usan `#F4FAFF`.
 - Usar `#006971` para controles y estados seleccionados. Las acciones turquesa `#05A8B5` llevan texto oscuro para conservar contraste; el cian brillante queda para acentos breves.
 - Mantener el logotipo Y existente. El rojo ladrillo identifica emergencias y errores; el verde identifica estados reales de disponibilidad o finalización.
 - Usar tarjetas claras con esquinas suaves, separación generosa y componentes Material 3. No añadir navegación, datos ni acciones que no existan en la app.
@@ -131,7 +134,7 @@ La referencia visual original es [Campsite en Refero](https://styles.refero.desi
 ### Composición de las pantallas tomada de Stitch
 
 - **Registro:** seguir la referencia más reciente con fondo verde menta pálido, emblema circular Y, etiqueta de comunidad, tarjetas separadas para perfil y zona, prefijo +51 y notas de privacidad. Incluir GPS, ajuste del punto en el mapa, vista previa real del radio de 500 m, botón principal y tutorial breve. No sustituir la Y por un corazón ni solicitar o mostrar un nombre de barrio.
-- **Muro:** encabezado con marca y perfil, radio, saludo, selector horizontal de categorías, aviso de emergencia solo cuando existan avisos reales, tarjetas tocables y botón flotante Publicar. La barra inferior solo lleva a las vistas que existen.
+- **Muro:** fondo verde menta; encabezado con marca y perfil, radio, saludo, selector horizontal Ayuda / Productos y servicios / Emergencias, aviso de emergencia solo cuando existan avisos reales, tarjetas tocables y botón flotante Publicar. La barra inferior solo lleva a las vistas que existen.
 - **Selección y publicación:** hoja inferior agrupada por categorías; formulario visual en secciones para título, descripción, modalidad y ubicación; botón Publicar fijo al pie. Mantener los tipos y acciones disponibles del flujo aprobado.
 - **Detalle:** jerarquía clara entre tipo, modalidad, título, autor, distancia, estado, participantes y descripción. Las acciones de coordinación corresponden al estado y a la relación del vecino con el aviso.
 - **Chat:** título ligado al aviso, indicador privado y modalidad/estado reales; historial ascendente con los mensajes antiguos arriba y los nuevos abajo; campo de envío anclado al pie.

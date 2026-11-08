@@ -169,7 +169,7 @@ class PostEmergencyNote extends StatelessWidget {
     margin: const EdgeInsets.only(top: 20),
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: const Color(0xFFFFF0EE),
+      color: YuntaColors.dangerSoft,
       borderRadius: BorderRadius.circular(14),
       border: Border.all(color: YuntaColors.danger.withValues(alpha: .45)),
     ),
