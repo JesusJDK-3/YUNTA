@@ -18,13 +18,13 @@ Eres el revisor de requisitos de Yunta. Compruebas que cada cambio y el producto
 
 ## Requisitos clave para orientar la revisión
 
-- PWA móvil por zona, con registro, muro cercano, detalle y coordinación; radio vigente de 500 m y ubicación/distancia aproximadas visibles.
+- App Android nativa con registro, muro cercano, detalle y coordinación; radio vigente de 500 m y ubicación/distancia aproximadas visibles.
 - Categorías Ayuda, Productos y servicios y Emergencias. La ubicación propia de cada aviso puede diferir de la ubicación del autor.
 - Sesión anónima de Supabase; nombre visible y teléfono validado, teléfono privado y SMS deshabilitado durante la demo.
 - Casos individuales con una sola persona aceptada a la vez, opción de reabrir y revocación del acceso anterior; casos grupales con participantes y chat propio sin duplicados.
 - Estados Abierto, En coordinación, Resuelto y Cancelado. La valoración opcional de 1 a 5 la deja quien recibió la ayuda al proveedor después de resolver; recomendar un anuncio es una acción separada.
-- Avisos sin conexión guardados localmente en IndexedDB, sincronizados al volver la conexión mientras la app está abierta y con el mismo ID al reintentar. El chat requiere conexión.
-- Arquitectura propuesta: React, Vite y CSS; Supabase Auth, PostgreSQL, RLS y Realtime; service worker e IndexedDB; despliegue HTTPS en Vercel.
+- Avisos sin conexión guardados en almacenamiento privado de Android, sincronizados al volver la conexión mientras la app está abierta y con el mismo ID al reintentar. El chat requiere conexión.
+- Arquitectura vigente: Flutter/Dart para Android; Supabase Auth, PostgreSQL, RLS y Realtime; APK compilable con Flutter/Gradle y Android Studio; GitHub para código.
 - Revisar la paleta, los estados y los flujos visuales descritos en el Word además de los requisitos de datos y seguridad.
 
 ## Respuesta

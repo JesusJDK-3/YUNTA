@@ -4,11 +4,11 @@
 
 ## Platform
 
-web
+android
 
 ## Stack
 
-React, Vite and CSS; Supabase anonymous Auth, PostgreSQL, Row Level Security and Realtime; a PWA service worker and IndexedDB outbox; GitHub and Vercel. The user delegated implementation and deployment within this stack.
+Flutter and Dart for the Android app; Supabase anonymous Auth, PostgreSQL, Row Level Security and Realtime; foreground Android location permission; Flutter/Gradle APK builds; GitHub for source and milestone commits. The previous Vite PWA is archived under `legacy-web/` and is no longer the application being developed.
 
 ## Users
 
@@ -24,10 +24,10 @@ Yunta organizes neighborhood help around approximate location and gives each cas
 
 ## Operating Context
 
-- The app uses a browser session created with Supabase anonymous Auth; registration collects a display name and a phone number whose format is validated, without SMS during the demo.
-- GPS suggests the user's location. A user may choose the neighborhood manually and mark an approximate point.
+- The app uses a persistent Supabase anonymous session on Android; registration collects a display name and a validated private phone number, without SMS during the demo.
+- GPS suggests the user's location. A user may mark an approximate point on the map; the app never asks for a neighborhood name.
 - Posts are discovered within 500 meters of the user's location. The public wall shows an approximate zone and distance; exact addresses may be shared during coordination when needed.
-- A post can be drafted offline after the app has been opened online. It remains local until Supabase confirms the save; the app retries with the same post identifier while it is open and internet returns. Live chat requires internet.
+- A post can be drafted offline after the app has been opened online. It remains in private native storage until Supabase confirms the save; the app retries with the same post identifier while it is open and internet returns. Live chat requires internet.
 
 ## Capabilities and Constraints
 
@@ -36,18 +36,19 @@ Yunta organizes neighborhood help around approximate location and gives each cas
 - Group cases let active participants share a chat tied to that case. Repeated joins by the same neighbor do not create duplicate participants.
 - The author controls editing and closing their post. The recipient of help or a service rates the provider after an individual case is resolved; recommending an advertisement is a separate action.
 - Phone numbers and exact personal locations are private. Chat access and data changes are enforced by Supabase RLS, not only by interface controls.
-- Do not cache private profiles, exact coordinates, chat contents, or user data in a public service-worker cache.
+- Do not place private profiles, exact coordinates, chat contents, or user data in public or shared device storage.
 - The operative nearby radius is 500 meters. The 1 km distance in the source document is an illustrative example only.
 
 ## Brand Commitments
 
-The product name is Yunta. Its existing Y mark is a brand commitment and must not be replaced by a heart. The Word document defines the original palette; the user later approved a white background, soft sunny-yellow primary actions, and restrained liquid motion, recorded in `docs/ESPECIFICACION.md`.
+The product name is Yunta. Its existing Y mark is a brand commitment and must not be replaced by a heart. The Word document defines the original palette; the user later approved a white background, vivid but gentle yellow primary actions, and slow water-like motion, recorded in `docs/ESPECIFICACION.md`.
 
 ## Evidence on Hand
 
 - The user supplied `YUNTA.docx`; its full functional requirements are transcribed in `docs/ESPECIFICACION.md`.
 - The user supplied screenshots showing a Supabase Free organization and a Vercel Hobby account.
-- No Supabase project credentials, database password, Vercel domain, legal copy, analytics approval, user testimonials, or production data were supplied. Do not invent them.
+- Local Supabase URL and publishable key are configured for APK builds and excluded from Git. Never put a service-role key in the app or repository.
+- No legal copy, analytics approval, user testimonials, or production posts were supplied. Do not invent them.
 
 ## Product Principles
 

@@ -15,7 +15,7 @@ Cada barrio cuenta con un muro de publicaciones. El vecino puede pedir u ofrecer
 - Solicitar nombre visible y número de celular real. Validar el formato; el número es privado y el SMS está deshabilitado durante la demo.
 - Solicitar la ubicación con GPS o permitir marcar un punto aproximado en el mapa. El registro no solicita ni guarda un nombre de barrio; las categorías clasifican las publicaciones y la distancia se calcula con la ubicación.
 - Mostrar un tutorial breve al entrar por primera vez, con instrucciones para publicar y sumarse a un caso.
-- Crear una sesión de Supabase por navegador. La sesión identifica al vecino.
+- Crear una sesión anónima persistente de Supabase en Android. La sesión identifica al vecino.
 
 ### Muro
 
@@ -55,13 +55,13 @@ Los reintentos de envío conservan el mismo identificador del aviso para evitar 
 
 | Capa | Tecnología y responsabilidad |
 | --- | --- |
-| Interfaz móvil | React, Vite y CSS; registro, muro cercano, detalle y chat con la paleta Yunta. |
-| Sesión | Supabase Auth anónimo. La sesión identifica al vecino. Durante la demo no se envían SMS. |
+| Interfaz móvil | Flutter para Android; registro, muro cercano, detalle y chat con la paleta Yunta. |
+| Sesión | Supabase Auth anónimo con almacenamiento persistente de la sesión. Durante la demo no se envían SMS. |
 | Base de datos | Supabase con PostgreSQL; perfiles, publicaciones, participantes, mensajes, recomendaciones y valoraciones. |
-| Ubicación | GPS del navegador y consulta por distancia en PostgreSQL. El radio vigente es 500 m; coordenadas exactas se usan para calcular, no se muestran. |
+| Ubicación | Permiso GPS de Android en primer plano y consulta por distancia en PostgreSQL. El radio vigente es 500 m; coordenadas exactas se usan para calcular, no se muestran. |
 | Chat | Supabase Realtime, con persistencia en base de datos y políticas RLS para autor y participantes autorizados. |
-| Modo sin conexión | Service worker e IndexedDB. Después de abrir una vez con internet, permitir dejar avisos pendientes y sincronizarlos al volver la conexión mientras la app permanece abierta. |
-| Despliegue | Repositorio GitHub y Vercel Hobby con HTTPS. Vite construye con `npm run build` y publica `dist`; Supabase usa variables públicas de cliente. |
+| Modo sin conexión | Almacenamiento privado de Android. Después de abrir una vez con internet, permitir dejar avisos pendientes y sincronizarlos al volver la conexión mientras la app permanece abierta. No usar caché pública. |
+| Distribución | Repositorio GitHub con commits por hito y APK compilable con Flutter/Gradle y Android Studio. Supabase usa solo URL y publishable key de cliente; nunca se incluye una service-role key. |
 
 ## Modelo de datos
 
@@ -95,7 +95,7 @@ En un caso individual deben distinguirse receptor y proveedor por separado del a
 - Solo el autor puede modificar, resolver, cancelar o reabrir su publicación.
 - Solo el autor y participantes con acceso vigente leen o envían mensajes. Las reglas deben aplicarse en Supabase con RLS, no solo ocultando controles en la interfaz.
 - Quien recibió la ayuda o servicio califica a quien lo prestó; esa persona no necesariamente es el autor del aviso.
-- No guardar teléfono, coordenadas exactas, contenido de mensajes ni datos de perfil en la caché pública del service worker.
+- No guardar teléfono, coordenadas exactas, contenido de mensajes ni datos de perfil en almacenamiento público o compartido del dispositivo.
 
 ## Diseño visual original del Word
 
@@ -112,7 +112,7 @@ La referencia visual original es [Campsite en Refero](https://styles.refero.desi
 
 ## Actualización visual aprobada el 7 de noviembre de 2026
 
-- Usar blanco `#FFFFFF` como fondo principal de la PWA.
+- Usar blanco `#FFFFFF` como fondo principal de la app Android.
 - Conservar azul petróleo para texto e identidad; mantener el logotipo actual con la letra Y, sin sustituirlo por un corazón.
 - Usar amarillo alegre y suave `#F3D76F` para acciones principales, con texto azul petróleo y hover `#EBCB5C`.
 - Reservar amarillo pálido `#FFF3C5` para resaltados pequeños. Mantener rojo ladrillo para emergencias y verde para estados reales.

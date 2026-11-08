@@ -1,25 +1,24 @@
-# Yunta
+# Yunta Android
 
-Yunta es una PWA vecinal para encontrar ayuda, compartir productos y servicios, y coordinar apoyo ante emergencias cerca de casa.
+Yunta es una aplicación Android nativa hecha con Flutter y Dart. Supabase gestiona la sesión anónima, PostgreSQL, RLS y Realtime. El antiguo sitio PWA se conserva en `legacy-web/`.
 
-## Stack
+## Preparación
 
-- React y Vite; interfaz adaptable a móvil y escritorio.
-- Supabase Auth anónimo, PostgreSQL con PostGIS, RLS y Realtime.
-- Service worker precargado e IndexedDB para avisos pendientes sin conexión.
-- GitHub y Vercel para versiones y publicación HTTPS.
+1. Instala Flutter y Android Studio con JDK 17.
+2. Copia `supabase.defines.example.json` a `.env.json`.
+3. En `.env.json`, coloca la URL y la publishable key del proyecto Supabase. Este archivo se excluye de Git; nunca uses una service-role key.
+4. Ejecuta `flutter pub get`.
 
-## Ejecutar en local
+## Ejecutar y compilar
 
-1. Instala Node.js 20.19+ o 22.12+.
-2. Ejecuta `npm install`.
-3. Copia `.env.example` a `.env` y agrega la URL y la clave publicable de Supabase.
-4. Ejecuta `npm run dev`.
+Abre el proyecto en Android Studio, o ejecuta `flutter run --dart-define-from-file=.env.json`. Para generar un APK de depuración, ejecuta `./scripts/build-apk.ps1`. El archivo queda en `artifacts/Yunta-debug.apk`.
 
-Las variables `VITE_*` son públicas. Nunca guardes claves `service_role` ni la contraseña de la base de datos en el cliente o en GitHub.
+La aplicación pide permiso de ubicación solo al usar el GPS. El punto elegido se guarda en el perfil privado de Supabase y nunca se muestra en pantalla. También se puede elegir un punto aproximado en el mapa.
 
-## Base de datos y despliegue
+## Hitos
 
-La especificación funcional está en [`docs/ESPECIFICACION.md`](docs/ESPECIFICACION.md). Las migraciones están en `supabase/migrations/`; la guía para aplicarlas y publicar está en [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+- Registro: nombre, celular peruano privado y ubicación GPS o punto del mapa; sesión anónima persistente.
+- Muro: publicaciones reales de Supabase dentro de 500 m, sin datos de ejemplo.
+- Chat: mensajes persistidos y recibidos en tiempo real por Supabase Realtime.
 
-Todos los archivos de código fuente deben mantenerse en un máximo de 400 líneas. Los revisores del proyecto y sus reglas están definidos en `AGENTS.md` y `.cursor/agents/`.
+Cada hito se revisa, compila y publica en GitHub antes de continuar con el siguiente.
