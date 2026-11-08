@@ -245,7 +245,7 @@ class _PostComposerScreenState extends State<PostComposerScreen> {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             Text(
-              widget.type.label,
+              widget.type.publishLabel ?? widget.type.label,
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ],

@@ -45,9 +45,12 @@ class _PostTypeSheet extends StatelessWidget {
           const SizedBox(height: 5),
           const Text('Elige el tipo de aviso para tus vecinos.'),
           const SizedBox(height: 18),
-          for (final category in PostCategory.values) ...[
+          for (final category in PostCategory.values.where(
+            (category) =>
+                publishablePostTypes.any((type) => type.category == category),
+          )) ...[
             _CategoryHeading(category: category),
-            for (final type in postTypes.where(
+            for (final type in publishablePostTypes.where(
               (item) => item.category == category,
             ))
               _TypeOption(type: type),
@@ -97,7 +100,7 @@ class _TypeOption extends StatelessWidget {
         type.icon,
         color: emergency ? YuntaColors.danger : YuntaColors.ink,
       ),
-      title: Text(type.label),
+      title: Text(type.publishLabel ?? type.label),
       trailing: const Icon(Icons.chevron_right),
       onTap: () => Navigator.of(context).pop(type),
     );

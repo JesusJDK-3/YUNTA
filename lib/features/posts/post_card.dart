@@ -4,9 +4,10 @@ import '../../core/theme/yunta_theme.dart';
 import 'post_catalog.dart';
 
 class PostCard extends StatelessWidget {
-  const PostCard({required this.post, super.key});
+  const PostCard({required this.post, required this.onTap, super.key});
 
   final Map<String, dynamic> post;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -42,101 +43,110 @@ class PostCard extends StatelessWidget {
           width: 1.2,
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: emergency
-                    ? const Color(0xFFFFE8E5)
-                    : YuntaColors.yellowPale,
-                borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: emergency
+                      ? const Color(0xFFFFE8E5)
+                      : YuntaColors.yellowPale,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  type?.icon ?? Icons.campaign_outlined,
+                  color: emergency ? YuntaColors.danger : YuntaColors.ink,
+                  size: 27,
+                ),
               ),
-              child: Icon(
-                type?.icon ?? Icons.campaign_outlined,
-                color: emergency ? YuntaColors.danger : YuntaColors.ink,
-                size: 27,
-              ),
-            ),
-            const SizedBox(width: 13),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          type?.label ?? 'Aviso vecinal',
-                          style: TextStyle(
-                            color: emergency
-                                ? YuntaColors.danger
-                                : YuntaColors.ink,
-                            fontWeight: FontWeight.w700,
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            type?.label ?? 'Aviso vecinal',
+                            style: TextStyle(
+                              color: emergency
+                                  ? YuntaColors.danger
+                                  : YuntaColors.ink,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
-                      Text(mode, style: Theme.of(context).textTheme.bodySmall),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    post['title'] as String? ?? '',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    post['description'] as String? ?? '',
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 11),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 6,
-                    children: [
-                      _PostFact(
-                        icon: Icons.location_on_outlined,
-                        label: locationLabel.isEmpty
-                            ? 'Cerca de ti'
-                            : locationLabel,
-                      ),
-                      _PostFact(
-                        icon: Icons.circle,
-                        label: postStatusLabel(post['status'] as String? ?? ''),
-                        color: active
-                            ? const Color(0xFF368857)
-                            : YuntaColors.muted,
-                        iconSize: 9,
-                      ),
-                      if (members > 0)
-                        _PostFact(
-                          icon: Icons.people_outline,
-                          label:
-                              '$members ${members == 1 ? 'vecino' : 'vecinos'}',
+                        Text(
+                          mode,
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
-                      if (post['category'] == 'products_services')
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      post['title'] as String? ?? '',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      post['description'] as String? ?? '',
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 11),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 6,
+                      children: [
                         _PostFact(
-                          icon: Icons.thumb_up_alt_outlined,
-                          label: '$recommendations recomendaciones',
+                          icon: Icons.location_on_outlined,
+                          label: locationLabel.isEmpty
+                              ? 'Cerca de ti'
+                              : locationLabel,
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 7),
-                  Text(
-                    'Publicado por ${post['author_name'] ?? 'Vecino'}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
+                        _PostFact(
+                          icon: Icons.circle,
+                          label: postStatusLabel(
+                            post['status'] as String? ?? '',
+                          ),
+                          color: active
+                              ? const Color(0xFF368857)
+                              : YuntaColors.muted,
+                          iconSize: 9,
+                        ),
+                        if (members > 0)
+                          _PostFact(
+                            icon: Icons.people_outline,
+                            label:
+                                '$members ${members == 1 ? 'vecino' : 'vecinos'}',
+                          ),
+                        if (post['category'] == 'products_services')
+                          _PostFact(
+                            icon: Icons.thumb_up_alt_outlined,
+                            label: '$recommendations recomendaciones',
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 7),
+                    Text(
+                      'Publicado por ${post['author_name'] ?? 'Vecino'}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

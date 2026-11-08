@@ -7,6 +7,7 @@ import '../auth/profile_repository.dart';
 import '../posts/post_card.dart';
 import '../posts/post_catalog.dart';
 import '../posts/post_composer_screen.dart';
+import '../posts/post_detail_screen.dart';
 import '../posts/post_repository.dart';
 import '../posts/post_type_sheet.dart';
 
@@ -75,6 +76,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _openDetail(String postId) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (_) => PostDetailScreen(postId: postId)),
+    );
+    if (mounted) await _loadPosts();
+  }
+
   @override
   Widget build(BuildContext context) {
     final visiblePosts = _posts
@@ -140,7 +148,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     _emptyState(context)
                   else
                     for (final post in visiblePosts) ...[
-                      PostCard(post: post),
+                      PostCard(
+                        post: post,
+                        onTap: () => _openDetail(post['id'] as String),
+                      ),
                       const SizedBox(height: 12),
                     ],
                 ],

@@ -29,6 +29,7 @@ class PostTypeDefinition {
     required this.label,
     required this.icon,
     this.groupOnly = false,
+    this.publishLabel,
   });
 
   final String value;
@@ -36,6 +37,7 @@ class PostTypeDefinition {
   final String label;
   final IconData icon;
   final bool groupOnly;
+  final String? publishLabel;
 }
 
 const postTypes = <PostTypeDefinition>[
@@ -44,6 +46,7 @@ const postTypes = <PostTypeDefinition>[
     category: PostCategory.help,
     label: 'Necesito ayuda',
     icon: Icons.handshake_outlined,
+    publishLabel: 'Necesito ayuda',
   ),
   PostTypeDefinition(
     value: 'help_offer',
@@ -62,12 +65,15 @@ const postTypes = <PostTypeDefinition>[
     category: PostCategory.productsServices,
     label: 'Servicio',
     icon: Icons.handyman_outlined,
+    publishLabel: 'Servicio',
   ),
   PostTypeDefinition(
     value: 'urgent_request',
     category: PostCategory.emergency,
     label: 'Necesito apoyo urgente',
     icon: Icons.warning_amber_rounded,
+    groupOnly: true,
+    publishLabel: 'Aviso de emergencia',
   ),
   PostTypeDefinition(
     value: 'resource_available',
@@ -83,6 +89,10 @@ const postTypes = <PostTypeDefinition>[
     groupOnly: true,
   ),
 ];
+
+final publishablePostTypes = postTypes
+    .where((type) => type.publishLabel != null)
+    .toList(growable: false);
 
 PostTypeDefinition? postTypeFor(String value) {
   for (final type in postTypes) {
