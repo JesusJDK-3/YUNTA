@@ -100,10 +100,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 child: Text(
                   widget.isPostLocation
                       ? 'OpenStreetMap recibe solicitudes para cargar la zona '
-                            'visible del mapa. Yunta guarda este punto en el '
+                            'visible del mapa. AYNI guarda este punto en el '
                             'aviso y muestra solo una distancia aproximada.'
                       : 'OpenStreetMap recibe solicitudes para cargar la zona '
-                            'visible del mapa. Al completar el registro, Yunta '
+                            'visible del mapa. Al completar el registro, AYNI '
                             'guarda el punto elegido en tu perfil privado.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12),

@@ -13,12 +13,14 @@ class PostChatScreen extends StatefulWidget {
     required this.postId,
     required this.title,
     this.onOpenDetails,
+    this.onCaseResolved,
     super.key,
   });
 
   final String postId;
   final String title;
   final VoidCallback? onOpenDetails;
+  final Future<void> Function()? onCaseResolved;
 
   @override
   State<PostChatScreen> createState() => _PostChatScreenState();
@@ -41,6 +43,7 @@ class _PostChatScreenState extends State<PostChatScreen>
   bool _refreshingContext = false;
   bool _sending = false;
   bool _resolving = false;
+  String? _ratingPromptedChatId;
 
   String get _userId => Supabase.instance.client.auth.currentUser?.id ?? '';
 
@@ -90,6 +93,16 @@ class _PostChatScreenState extends State<PostChatScreen>
         _loadingContext = false;
         _contextUnavailable = false;
       });
+      if (details['status'] == 'resolved' &&
+          _ratingPromptedChatId != chatId &&
+          widget.onCaseResolved != null) {
+        _ratingPromptedChatId = chatId;
+        try {
+          await widget.onCaseResolved!();
+        } catch (_) {
+          // Keep the chat available if opening the optional rating fails.
+        }
+      }
     } catch (_) {
       if (!mounted || requestId != _contextRequestId) return;
       setState(() {

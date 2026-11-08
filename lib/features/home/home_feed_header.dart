@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/yunta_theme.dart';
-import '../../shared/widgets/yunta_wordmark.dart';
+import '../../shared/widgets/ayni_wordmark.dart';
 import '../notifications/notification_bell.dart';
 
 class HomeFeedHeader extends StatelessWidget {
   const HomeFeedHeader({
     required this.displayName,
     required this.locationSource,
+    required this.onProfileTap,
     super.key,
   });
 
   final String displayName;
   final String locationSource;
+  final VoidCallback onProfileTap;
 
   @override
   Widget build(BuildContext context) {
@@ -24,17 +26,25 @@ class HomeFeedHeader extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Expanded(child: YuntaWordmark(compact: true)),
+            const Expanded(child: AyniWordmark(compact: true)),
             _smallRadiusPill(),
           ],
         ),
         const SizedBox(height: 18),
         Row(
           children: [
-            CircleAvatar(
-              radius: 23,
-              backgroundColor: YuntaColors.surfaceMint,
-              child: Text(initial, style: _avatarText),
+            Semantics(
+              button: true,
+              label: 'Abrir mi perfil',
+              child: InkWell(
+                onTap: onProfileTap,
+                customBorder: const CircleBorder(),
+                child: CircleAvatar(
+                  radius: 23,
+                  backgroundColor: YuntaColors.surfaceMint,
+                  child: Text(initial, style: _avatarText),
+                ),
+              ),
             ),
             const SizedBox(width: 11),
             Expanded(

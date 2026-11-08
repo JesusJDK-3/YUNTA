@@ -239,7 +239,7 @@ class ChatPrivacyNote extends StatelessWidget {
         const SizedBox(width: 7),
         Flexible(
           child: Text(
-            'Chat privado para participantes de este caso en Yunta',
+            'Chat privado para participantes de este caso en AYNI',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall,
           ),

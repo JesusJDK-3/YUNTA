@@ -3,15 +3,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/theme/yunta_theme.dart';
 import 'post_catalog.dart';
+import 'post_cancel_confirmation.dart';
 import 'post_chat_screen.dart';
 import 'post_detail_meta_widgets.dart';
+import 'post_detail_auto_refresh.dart';
 import 'post_detail_offer_section.dart';
 import 'post_detail_widgets.dart';
 import 'post_edit_dialog.dart';
 import 'post_interaction_actions.dart';
 import 'post_image_preview.dart';
 import 'post_repository.dart';
-import 'post_rating_screen.dart';
+import 'post_rating_navigation.dart';
+import '../profile/ayni_profile_sheet.dart';
 
 class PostDetailScreen extends StatefulWidget {
   const PostDetailScreen({required this.postId, super.key});
@@ -28,7 +31,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   String? _error;
   bool _loading = true;
   bool _working = false;
-
+  bool _ratingPromptDeferred = false;
+  late final VoidCallback _stopAutoRefresh;
   String get _userId => Supabase.instance.client.auth.currentUser?.id ?? '';
   bool get _isAuthor => _post?['author_id'] == _userId;
   String get _status => _post?['status'] as String? ?? '';
@@ -42,20 +46,27 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool get _canAcceptOffers => !_group && _status == 'open';
   bool get _canJoin =>
       _status == 'open' || (_group && _status == 'coordinating');
-  bool get _canRate {
-    final provider = _post?['provider_name'] as String?;
-    return _status == 'resolved' &&
-        !_group &&
-        provider != null &&
-        provider.trim().isNotEmpty &&
-        _post?['my_rating'] == null;
-  }
+  bool get _canRate =>
+      _error == null &&
+      _status == 'resolved' &&
+      !_group &&
+      (_post?['provider_name'] as String?)?.trim().isNotEmpty == true &&
+      _post?['my_rating'] == null;
 
   @override
   void initState() {
     super.initState();
     _repository = PostRepository(Supabase.instance.client);
+    _stopAutoRefresh = startPostDetailAutoRefresh(
+      () => _working ? null : _load(),
+    );
     _load();
+  }
+
+  @override
+  void dispose() {
+    _stopAutoRefresh();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -68,7 +79,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         _loading = false;
       });
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted || _post != null) return;
       setState(() {
         _error = 'No se pudo abrir el aviso. Actualiza e inténtalo de nuevo.';
         _loading = false;
@@ -147,30 +158,34 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           postId: widget.postId,
           title: _post?['title'] as String? ?? 'Coordinación vecinal',
           onOpenDetails: () => Navigator.of(context).pop(),
+          onCaseResolved: () async {
+            await _load();
+            if (_canRate && !_ratingPromptDeferred && mounted) {
+              await _openRating();
+            }
+          },
         ),
       ),
     );
+    if (!mounted) return;
+    await _load();
+    if (_canRate && !_ratingPromptDeferred && mounted) await _openRating();
   }
 
   Future<void> _openRating() async {
     final provider = _post?['provider_name'] as String?;
     if (!_canRate || provider == null) return;
-    final saved = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => PostRatingScreen(
-          postId: widget.postId,
-          title: _post?['title'] as String? ?? '',
-          providerName: provider,
-        ),
-      ),
+    final saved = await openPostRating(
+      context: context,
+      postId: widget.postId,
+      title: _post?['title'] as String? ?? '',
+      providerName: provider,
     );
-    if (saved == true && mounted) await _load();
-  }
-
-  void _showError(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    if (saved == true && mounted) {
+      await _load();
+    } else if (mounted) {
+      _ratingPromptDeferred = true;
+    }
   }
 
   Future<void> _changeStatus(String action) async {
@@ -181,6 +196,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       } else if (action == 'cancel') {
         await _repository.cancel(widget.postId);
       } else if (action == 'reopen') {
+        _ratingPromptDeferred = false;
         await _repository.reopen(widget.postId);
       }
       await _load();
@@ -192,30 +208,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  void _showError(String message) => showPostDetailError(context, message);
+
   Future<void> _confirmCancel() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Retirar aviso'),
-        content: const Text('Los vecinos ya no podrán unirse a este caso.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Volver'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Retirar'),
-          ),
-        ],
-      ),
-    );
+    final confirmed = await confirmPostCancellation(context);
     if (confirmed == true && mounted) await _changeStatus('cancel');
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(_detailTitle)),
+    appBar: AppBar(
+      title: Text(postDetailTitleFor(_post?['category'] as String?)),
+    ),
     bottomNavigationBar: _visitorBar(),
     body: _loading
         ? const Center(child: CircularProgressIndicator())
@@ -223,12 +227,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         ? _errorView()
         : _postView(context),
   );
-
-  String get _detailTitle {
-    if (_post?['category'] == 'emergency') return 'Detalle de emergencia';
-    if (_post?['category'] == 'products_services') return 'Detalle del anuncio';
-    return 'Detalle del favor';
-  }
 
   Widget? _visitorBar() {
     if (_post == null || _isAuthor || (!_canChat && !_canJoin)) {
@@ -302,6 +300,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           typeLabel: type?.label ?? 'Aviso vecinal',
           title: post['title'] as String? ?? '',
           author: post['author_name'] as String? ?? 'Vecino',
+          authorRatingAverage:
+              (post['author_rating_average'] as num?)?.toDouble() ?? 0,
+          authorRatingCount:
+              (post['author_rating_count'] as num?)?.toInt() ?? 0,
+          onAuthorTap: () => showAyniProfileSheet(
+            context,
+            displayName: post['author_name'] as String? ?? 'Vecino',
+            ratingAverage:
+                (post['author_rating_average'] as num?)?.toDouble() ?? 0,
+            ratingCount: (post['author_rating_count'] as num?)?.toInt() ?? 0,
+          ),
           description: post['description'] as String? ?? '',
           publishedLabel: postPublishedAgo(post['created_at']),
           emergency: emergency,

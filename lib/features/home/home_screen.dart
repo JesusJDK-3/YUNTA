@@ -16,6 +16,7 @@ import 'home_bottom_bar.dart';
 import 'home_cases_screen.dart';
 import 'home_feed_header.dart';
 import 'home_feed_widgets.dart';
+import '../profile/ayni_profile_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({required this.profile, super.key});
@@ -33,10 +34,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   PostCategory _category = PostCategory.help;
   String? _error;
   bool _loading = true;
+  late RegisteredProfile _profile;
 
   @override
   void initState() {
     super.initState();
+    _profile = widget.profile;
     WidgetsBinding.instance.addObserver(this);
     unawaited(PushNotificationService.instance.initializeForCurrentUser());
     _postsRepository = PostRepository(Supabase.instance.client);
@@ -48,7 +51,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       unawaited(PushNotificationService.instance.refreshAfterResume());
       unawaited(_loadPosts());
+      unawaited(_refreshProfile());
     }
+  }
+
+  Future<void> _refreshProfile() async {
+    try {
+      final profile = await ProfileRepository(Supabase.instance.client)
+          .getMyProfile();
+      if (profile != null && mounted) setState(() => _profile = profile);
+    } catch (_) {
+      // Keep the last profile snapshot available while the connection recovers.
+    }
+  }
+
+  Future<void> _openProfile() async {
+    await _refreshProfile();
+    if (!mounted) return;
+    await showAyniProfileSheet(
+      context,
+      displayName: _profile.displayName,
+      ratingAverage: _profile.ratingAverage,
+      ratingCount: _profile.ratingCount,
+    );
   }
 
   @override
@@ -84,10 +109,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (type == null || !mounted) return;
     final result = await Navigator.of(context).push<PostPublishResult>(
       MaterialPageRoute(
-        builder: (_) => PostComposerScreen(
-          type: type,
-          initialLocation: widget.profile.location,
-        ),
+        builder: (_) =>
+            PostComposerScreen(type: type, initialLocation: _profile.location),
       ),
     );
     if (result == null || !mounted) return;
@@ -99,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         content: Text(
           result == PostPublishResult.photoUploadFailed
               ? 'Aviso publicado. La foto no se pudo guardar.'
-              : 'Aviso publicado en Yunta.',
+              : 'Aviso publicado en AYNI.',
         ),
       ),
     );
@@ -171,8 +194,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
                 children: [
                   HomeFeedHeader(
-                    displayName: widget.profile.displayName,
-                    locationSource: widget.profile.locationSource,
+                    displayName: _profile.displayName,
+                    locationSource: _profile.locationSource,
+                    onProfileTap: _openProfile,
                   ),
                   const SizedBox(height: 16),
                   HomeCategorySelector(

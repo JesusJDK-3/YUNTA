@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/yunta_theme.dart';
 
+const _postDetailTitles = {
+  'emergency': 'Detalle de emergencia',
+  'products_services': 'Detalle del anuncio',
+};
+
+String postDetailTitleFor(String? category) =>
+    _postDetailTitles[category] ?? 'Detalle del favor';
+
 class PostDetailMetricCard extends StatelessWidget {
   const PostDetailMetricCard({
     required this.icon,

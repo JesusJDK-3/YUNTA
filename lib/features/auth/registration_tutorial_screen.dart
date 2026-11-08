@@ -7,7 +7,7 @@ class RegistrationTutorialScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Así funciona Yunta')),
+    appBar: AppBar(title: const Text('Así funciona AYNI')),
     body: SafeArea(
       child: Center(
         child: ConstrainedBox(

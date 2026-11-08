@@ -1,6 +1,6 @@
-# Especificación funcional de Yunta
+# Especificación funcional de AYNI (antes Yunta)
 
-Esta especificación resume de forma versionable el documento fuente `YUNTA.docx`. El producto es una aplicación vecinal móvil que conecta a personas cercanas para pedir u ofrecer ayuda, encontrar productos y servicios recomendados y coordinar apoyo ante emergencias.
+Esta especificación resume de forma versionable el documento fuente `YUNTA.docx`. El producto AYNI (antes Yunta) es una aplicación vecinal móvil que conecta a personas cercanas para pedir u ofrecer ayuda, encontrar productos y servicios recomendados y coordinar apoyo ante emergencias.
 
 ## Problema y objetivo
 
@@ -58,7 +58,7 @@ Los reintentos de envío conservan el mismo identificador del aviso para evitar 
 
 | Capa | Tecnología y responsabilidad |
 | --- | --- |
-| Interfaz móvil | Flutter para Android; registro, muro cercano, detalle y chat con la paleta Yunta. |
+| Interfaz móvil | Flutter para Android; registro, muro cercano, detalle y chat con la identidad visual AYNI. |
 | Sesión | Supabase Auth anónimo con almacenamiento persistente de la sesión. Durante la demo no se envían SMS. |
 | Base de datos | Supabase con PostgreSQL; perfiles, publicaciones, participantes, mensajes, recomendaciones y valoraciones. |
 | Ubicación | Permiso GPS de Android en primer plano y consulta por distancia en PostgreSQL. El radio vigente es 500 m; coordenadas exactas se usan para calcular, no se muestran. |
@@ -127,17 +127,24 @@ La referencia visual original es [Campsite en Refero](https://styles.refero.desi
 
 - Aplicar a Flutter el sistema “Vecindad Conectada” del paquete Stitch: mantener el fondo verde menta `#BCE8C4` en el muro como muestra la referencia elegida, con tarjetas casi blancas, tinta petróleo y acentos turquesa/menta. El registro conserva el verde menta pálido `#F1FAF5`; las vistas secundarias usan `#F4FAFF`.
 - Usar `#006971` para controles y estados seleccionados. Las acciones turquesa `#05A8B5` llevan texto oscuro para conservar contraste; el cian brillante queda para acentos breves.
-- Mantener el logotipo Y existente. El rojo ladrillo identifica emergencias y errores; el verde identifica estados reales de disponibilidad o finalización.
+- Mantener el sistema “Vecindad Conectada”. El rojo ladrillo identifica emergencias y errores; el verde identifica estados reales de disponibilidad o finalización.
 - Usar tarjetas claras con esquinas suaves, separación generosa y componentes Material 3. No añadir navegación, datos ni acciones que no existan en la app.
 - El prototipo Stitch es solo referencia visual: no copiar sus nombres, avisos, fotos, mapas, barrios, reputaciones ni contenido de muestra como datos del producto.
 - Mantener ubicación GPS real o punto elegido en mapa, radio de 500 m, privacidad de coordenadas y teléfono, y todas las funciones Supabase actuales.
 
 ### Composición de las pantallas tomada de Stitch
 
-- **Registro:** seguir la referencia más reciente con fondo verde menta pálido, emblema circular Y, etiqueta de comunidad, tarjetas separadas para perfil y zona, prefijo +51 y notas de privacidad. Incluir GPS, ajuste del punto en el mapa, vista previa real del radio de 500 m, botón principal y tutorial breve. No sustituir la Y por un corazón ni solicitar o mostrar un nombre de barrio.
+- **Registro:** seguir la referencia más reciente con fondo verde menta pálido, emblema circular AYNI, etiqueta de comunidad, tarjetas separadas para perfil y zona, prefijo +51 y notas de privacidad. Incluir GPS, ajuste del punto en el mapa, vista previa real del radio de 500 m, botón principal y tutorial breve. No solicitar ni mostrar un nombre de barrio.
 - **Muro:** fondo verde menta; encabezado con marca y perfil, radio, saludo, selector horizontal Ayuda / Productos y servicios / Emergencias, aviso de emergencia solo cuando existan avisos reales, tarjetas tocables y botón flotante Publicar. La barra inferior solo lleva a las vistas que existen.
 - **Selección y publicación:** hoja inferior agrupada por categorías; formulario visual en secciones para título, descripción, modalidad y ubicación; botón Publicar fijo al pie. Mantener los tipos y acciones disponibles del flujo aprobado.
 - **Detalle:** seguir la referencia con tipo, fecha relativa real, título, autor, descripción y tarjetas de modalidad/participantes. Mantener solo la distancia aproximada y el estado real; no mostrar número de caso ficticio, duración no registrada, perímetro comunitario protegido, mapa ni zona de entrega. La foto sigue siendo opcional y las acciones corresponden al estado y a la relación del vecino con el aviso.
 - **Chat:** encabezado con el participante real y acceso al detalle; modalidad y estado consultados del caso; historial cronológico con el mensaje nuevo abajo; compositor fijo. El autor puede finalizar desde la conversación. Cada nueva asignación individual usa una conversación separada para ocultar el historial al siguiente vecino. No afirmar presencia en línea, cifrado de extremo a extremo ni confirmaciones de lectura si no existen; no mostrar un mapa de encuentro sin un punto real guardado.
 - **Valoración:** pantalla opcional después de resolver un caso individual para que quien recibió la ayuda califique al proveedor con 1–5 estrellas y comentario opcional. Se puede omitir y Supabase valida quién puede enviarla.
 - Las tarjetas, conteos, distancia, participantes, actividad y valoración siempre se derivan de datos reales; nunca se rellenan con la muestra visual de Stitch.
+
+## Actualización aprobada de marca y valoración (8 de noviembre de 2026)
+
+- La marca pública pasa de Yunta a AYNI. Android muestra el logotipo manuscrito AYNI con la espiral andina en el inicio, registro, encabezado e icono de la aplicación. Los identificadores técnicos existentes se conservan.
+- Al iniciar, se muestra una precarga AYNI de al menos 3 segundos; si Supabase tarda más, permanece visible hasta tener el resultado.
+- El perfil muestra debajo del nombre el promedio y la cantidad reales de valoraciones recibidas. La ficha propia y la de otro vecino solo muestran el nombre y esa reputación; el detalle entrega este resumen al vecino que ya puede ver el aviso. No exponen teléfono ni ubicación exacta.
+- Al finalizar un caso individual, la persona elegible que recibió la ayuda puede valorar al proveedor inmediatamente desde el detalle o el chat. La valoración sigue siendo opcional y se puede omitir.

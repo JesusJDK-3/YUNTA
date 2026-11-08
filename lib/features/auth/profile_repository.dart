@@ -23,6 +23,8 @@ class ProfileRepository {
         longitude: longitude.toDouble(),
       ),
       locationSource: profile['location_source'] as String? ?? 'manual',
+      ratingAverage: (profile['rating_average'] as num?)?.toDouble() ?? 0,
+      ratingCount: (profile['rating_count'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -54,9 +56,13 @@ class RegisteredProfile {
     required this.displayName,
     required this.location,
     required this.locationSource,
+    this.ratingAverage = 0,
+    this.ratingCount = 0,
   });
 
   final String displayName;
   final LocationPoint location;
   final String locationSource;
+  final double ratingAverage;
+  final int ratingCount;
 }

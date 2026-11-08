@@ -16,11 +16,11 @@ Neighbors who need to ask for or offer help, find local products and services, o
 
 ## Product Purpose
 
-Yunta connects neighbors who are close enough to help each other. Its wall lets a neighbor ask or offer help, publish a local product or service, and report an emergency. The app supports both one-to-one assistance and group coordination through case-specific chats.
+AYNI (formerly Yunta) connects neighbors who are close enough to help each other. Its wall lets a neighbor ask or offer help, publish a local product or service, and report an emergency. The app supports both one-to-one assistance and group coordination through case-specific chats.
 
 ## Positioning
 
-Yunta organizes neighborhood help around approximate location and gives each case a coordination flow suited to its need: one accepted helper for an individual case, or a shared participant chat for a group case.
+AYNI organizes neighborhood help around approximate location and gives each case a coordination flow suited to its need: one accepted helper for an individual case, or a shared participant chat for a group case.
 
 ## Operating Context
 
@@ -42,7 +42,7 @@ Yunta organizes neighborhood help around approximate location and gives each cas
 
 ## Brand Commitments
 
-The product name is Yunta. Its existing Y mark is a brand commitment and must not be replaced by a heart. The Word document defines the original palette; the user later approved a white background, vivid but gentle yellow primary actions, and slow water-like motion, recorded in `docs/ESPECIFICACION.md`.
+The product's current public name is AYNI. The supplied AYNI reference defines the handwritten wordmark and Andean spiral icon; do not substitute the former Y mark or use a heart. Keep internal identifiers such as the GitHub repository, Supabase project, Firebase project, and Android package stable during this visual rename.
 
 ## Evidence on Hand
 

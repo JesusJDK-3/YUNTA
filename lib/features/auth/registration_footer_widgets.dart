@@ -109,7 +109,7 @@ class RegistrationFooter extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.arrow_forward_rounded),
-            label: Text(busy ? 'Guardando…' : 'Entrar a Yunta'),
+            label: Text(busy ? 'Guardando…' : 'Entrar a AYNI'),
             style: FilledButton.styleFrom(
               minimumSize: const Size.fromHeight(58),
               backgroundColor: YuntaColors.action,

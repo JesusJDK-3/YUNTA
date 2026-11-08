@@ -38,13 +38,13 @@ class RegistrationHero extends StatelessWidget {
                 ],
               ),
               alignment: Alignment.center,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
+              child: ClipOval(
                 child: Image.asset(
-                  'assets/yunta-192.png',
-                  width: 66,
-                  height: 66,
-                  semanticLabel: 'Yunta, logotipo con la letra Y',
+                  'assets/ayni-icon.png',
+                  width: 68,
+                  height: 68,
+                  fit: BoxFit.cover,
+                  semanticLabel: 'Logotipo AYNI',
                 ),
               ),
             ),

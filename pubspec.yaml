@@ -1,5 +1,5 @@
 name: yunta
-description: "Yunta conecta vecinos para compartir ayuda cercana."
+description: "AYNI conecta vecinos para compartir ayuda cercana."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.1.0+13
+version: 0.1.0+14
 
 environment:
   sdk: ^3.13.5
@@ -68,11 +68,12 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/yunta-192.png
+    - assets/ayni-icon.png
+    - assets/ayni-wordmark.png
 
 flutter_launcher_icons:
   android: true
-  image_path: assets/yunta-512.png
+  image_path: assets/ayni-icon.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

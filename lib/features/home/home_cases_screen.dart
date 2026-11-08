@@ -6,6 +6,7 @@ import '../posts/post_catalog.dart';
 import '../posts/post_chat_screen.dart';
 import '../posts/post_detail_screen.dart';
 import '../posts/post_repository.dart';
+import '../posts/post_rating_screen.dart';
 
 class HomeCasesScreen extends StatefulWidget {
   const HomeCasesScreen({super.key});
@@ -32,16 +33,17 @@ class _HomeCasesScreenState extends State<HomeCasesScreen> {
   }
 
   Future<void> _openChat(Map<String, dynamic> item) async {
+    final postId = item['post_id'] as String;
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
         builder: (_) => PostChatScreen(
-          postId: item['post_id'] as String,
+          postId: postId,
           title: item['title'] as String,
+          onCaseResolved: () => _promptRating(postId),
           onOpenDetails: () {
             Navigator.of(context).push<void>(
               MaterialPageRoute(
-                builder: (_) =>
-                    PostDetailScreen(postId: item['post_id'] as String),
+                builder: (_) => PostDetailScreen(postId: postId),
               ),
             );
           },
@@ -49,6 +51,36 @@ class _HomeCasesScreenState extends State<HomeCasesScreen> {
       ),
     );
     if (mounted) await _refresh();
+  }
+
+  Future<void> _promptRating(String postId) async {
+    try {
+      final detail = await _repository.loadDetail(postId);
+      final provider = detail['provider_name'] as String?;
+      if (!mounted ||
+          detail['status'] != 'resolved' ||
+          detail['coordination_mode'] == 'group' ||
+          detail['my_rating'] != null ||
+          provider == null ||
+          provider.trim().isEmpty) {
+        return;
+      }
+      await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => PostRatingScreen(
+            postId: postId,
+            title: detail['title'] as String? ?? '',
+            providerName: provider,
+          ),
+        ),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo abrir la valoración.')),
+        );
+      }
+    }
   }
 
   @override

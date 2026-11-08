@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/yunta_theme.dart';
+import '../profile/ayni_profile_sheet.dart';
+
+void showPostDetailError(BuildContext context, String message) {
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+}
 
 class PostDetailStickyBar extends StatelessWidget {
   const PostDetailStickyBar({required this.child, super.key});
@@ -115,6 +121,9 @@ class PostDetailSummaryCard extends StatelessWidget {
     required this.typeLabel,
     required this.title,
     required this.author,
+    required this.authorRatingAverage,
+    required this.authorRatingCount,
+    required this.onAuthorTap,
     required this.description,
     required this.publishedLabel,
     this.emergency = false,
@@ -125,6 +134,9 @@ class PostDetailSummaryCard extends StatelessWidget {
   final String typeLabel;
   final String title;
   final String author;
+  final double authorRatingAverage;
+  final int authorRatingCount;
+  final VoidCallback onAuthorTap;
   final String description;
   final String? publishedLabel;
   final bool emergency;
@@ -186,31 +198,49 @@ class PostDetailSummaryCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 19,
-              backgroundColor: YuntaColors.surfaceMint,
-              child: Text(
-                author.trim().isEmpty
-                    ? '?'
-                    : author.characters.first.toUpperCase(),
-                style: const TextStyle(
-                  color: YuntaColors.ink,
-                  fontWeight: FontWeight.w700,
+        Semantics(
+          button: true,
+          label: 'Ver perfil de $author',
+          child: InkWell(
+            onTap: onAuthorTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 19,
+                  backgroundColor: YuntaColors.surfaceMint,
+                  child: Text(
+                    author.trim().isEmpty
+                        ? '?'
+                        : author.characters.first.toUpperCase(),
+                    style: const TextStyle(
+                      color: YuntaColors.ink,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Publicado por $author',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 3),
+                      ProfileRatingSummary(
+                        average: authorRatingAverage,
+                        count: authorRatingCount,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'Publicado por $author',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-            ),
-          ],
+          ),
         ),
       ],
     ),

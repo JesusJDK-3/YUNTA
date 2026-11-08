@@ -29,7 +29,7 @@ class PushNotificationService {
       await _activateIfAllowed(messaging, settings.authorizationStatus);
     } catch (_) {
       _started = false;
-      debugPrint('Yunta no pudo activar las notificaciones push.');
+      debugPrint('AYNI no pudo activar las notificaciones push.');
     }
   }
 
@@ -46,7 +46,7 @@ class PushNotificationService {
       if (_started) return;
       await _activateIfAllowed(messaging, settings.authorizationStatus);
     } catch (_) {
-      debugPrint('Yunta no pudo actualizar el permiso de notificaciones.');
+      debugPrint('AYNI no pudo actualizar el permiso de notificaciones.');
     }
   }
 
@@ -89,7 +89,7 @@ class PushNotificationService {
     try {
       await _saveFid(fid);
     } catch (_) {
-      debugPrint('Yunta no pudo registrar este dispositivo para push.');
+      debugPrint('AYNI no pudo registrar este dispositivo para push.');
     }
   }
 

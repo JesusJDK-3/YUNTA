@@ -1,10 +1,10 @@
-# Yunta Android design system
+# AYNI Android design system
 
 ## Direction
 
 Use the user-selected Stitch “Vecindad Conectada” screens as visual reference
 and Material 3 as the Android interaction system. The app should feel calm,
-neighborly, fresh, and easy to scan. Preserve the existing Y logo and real app
+neighborly, fresh, and easy to scan. Use the supplied AYNI wordmark and Andean spiral icon with real app
 content; Stitch names, photos, neighborhoods, maps, reviews, and posts are sample
 material and must never become seeded user data.
 
@@ -42,10 +42,10 @@ states. Type follows the reference scale through Android's native sans face.
 
 ## Screen compositions
 
-- Registration centers the circular Y mark, community badge, and welcome copy
+- Registration centers the circular AYNI mark, community badge, and welcome copy
   above separate profile and location panels. It shows the real 500 m map only
   after GPS or a map point is selected, never a neighborhood name.
-- The wall uses the approved mint-green canvas, a compact Yunta/radius/profile
+- The wall uses the approved mint-green canvas, a compact AYNI/radius/profile
   header, greeting and a real location-source label, three horizontal category
   filters with live counts, tappable white announcement cards, and a centered
   publish action above Muro/Casos navigation. Notifications stay in the header.
@@ -77,7 +77,7 @@ states. Type follows the reference scale through Android's native sans face.
   remain enforced by the existing Supabase RPC.
 
 For registration, follow the user's latest reference: pale mint canvas,
-centered circular Y mark, community badge, separate white profile and location
+centered circular AYNI mark, community badge, separate white profile and location
 panels, country-code badge, privacy notes, actual 500 m map preview, fixed
-primary action, and a short working tutorial link. Keep the logo Y; do not copy
+primary action, and a short working tutorial link. Use the AYNI wordmark and Andean spiral; do not copy
 the heart mark, sample neighborhood name, or sample city from the reference.
