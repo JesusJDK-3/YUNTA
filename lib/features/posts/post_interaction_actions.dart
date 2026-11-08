@@ -56,6 +56,7 @@ class PostInteractionActions extends StatelessWidget {
       children.add(_joinButton());
     }
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final child in children) ...[child, const SizedBox(height: 8)],

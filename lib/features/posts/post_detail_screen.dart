@@ -266,9 +266,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Widget _postView(BuildContext context) {
     final post = _post!;
     final type = postTypeFor(post['type'] as String? ?? '');
-    final offers = (post['offers'] as List<dynamic>? ?? const [])
-        .map((item) => Map<String, dynamic>.from(item as Map))
-        .toList(growable: false);
+    final rawOffers = post['offers'];
+    final offers = rawOffers is List
+        ? rawOffers
+              .whereType<Map>()
+              .map((item) => Map<String, dynamic>.from(item))
+              .toList(growable: false)
+        : const <Map<String, dynamic>>[];
     final distance = (post['distance_m'] as num?)?.round();
     final locationLabel = distance == null
         ? null
