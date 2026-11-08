@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/location/device_location.dart';
+import '../../core/location/location_point.dart';
 import '../../core/theme/yunta_theme.dart';
+import '../auth/location_picker_screen.dart';
 import '../auth/profile_repository.dart';
 import '../notifications/push_notification_service.dart';
 import '../posts/post_card.dart';
@@ -16,6 +19,7 @@ import 'home_bottom_bar.dart';
 import 'home_cases_screen.dart';
 import 'home_feed_header.dart';
 import 'home_feed_widgets.dart';
+import 'home_location_update_sheet.dart';
 import '../profile/ayni_profile_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -34,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   PostCategory _category = PostCategory.help;
   String? _error;
   bool _loading = true;
+  bool _locationWorking = false;
   late RegisteredProfile _profile;
 
   @override
@@ -62,6 +67,62 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       if (profile != null && mounted) setState(() => _profile = profile);
     } catch (_) {
       // Keep the last profile snapshot available while the connection recovers.
+    }
+  }
+
+  Future<LocationPoint?> _pickLocationOnMap() =>
+      Navigator.of(context).push<LocationPoint>(
+        MaterialPageRoute(
+          builder: (_) => LocationPickerScreen(initialPoint: _profile.location),
+        ),
+      );
+
+  Future<void> _updateLocation() async {
+    if (_locationWorking) return;
+    final mode = await showHomeLocationUpdateSheet(context);
+    if (mode == null || !mounted) return;
+    setState(() => _locationWorking = true);
+    try {
+      final point = mode == HomeLocationUpdateMode.gps
+          ? await DeviceLocation.current()
+          : await _pickLocationOnMap();
+      if (point == null || !mounted) return;
+      final repository = ProfileRepository(Supabase.instance.client);
+      await repository.updateLocation(
+        location: point,
+        locationSource: mode == HomeLocationUpdateMode.gps ? 'gps' : 'manual',
+      );
+      final profile = await repository.getMyProfile();
+      if (profile == null || !mounted) return;
+      setState(() => _profile = profile);
+      await _loadPosts(showLoader: true);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Tu zona se actualizó.')));
+    } on LocationAccessException catch (error) {
+      if (!mounted) return;
+      final canOpenSettings = error.openSettings || error.deviceSettings;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.message),
+          action: canOpenSettings
+              ? SnackBarAction(
+                  label: 'Ajustes',
+                  onPressed: () => unawaited(
+                    DeviceLocation.openSettings(device: error.deviceSettings),
+                  ),
+                )
+              : null,
+        ),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo actualizar tu zona.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _locationWorking = false);
     }
   }
 
@@ -197,6 +258,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     displayName: _profile.displayName,
                     locationSource: _profile.locationSource,
                     onProfileTap: _openProfile,
+                    onLocationTap: _updateLocation,
+                    locationWorking: _locationWorking,
                   ),
                   const SizedBox(height: 16),
                   HomeCategorySelector(

@@ -9,12 +9,16 @@ class HomeFeedHeader extends StatelessWidget {
     required this.displayName,
     required this.locationSource,
     required this.onProfileTap,
+    required this.onLocationTap,
+    this.locationWorking = false,
     super.key,
   });
 
   final String displayName;
   final String locationSource;
   final VoidCallback onProfileTap;
+  final VoidCallback onLocationTap;
+  final bool locationWorking;
 
   @override
   Widget build(BuildContext context) {
@@ -99,33 +103,56 @@ class HomeFeedHeader extends StatelessWidget {
     ),
   );
 
-  Widget _zoneCard(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-    decoration: BoxDecoration(
+  Widget _zoneCard(BuildContext context) => Semantics(
+    button: true,
+    label:
+        'Actualizar ubicación. Radio de 500 metros. '
+        '${locationSource == 'gps' ? 'Ubicación por GPS' : 'Punto elegido en el mapa'}',
+    child: Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(18),
-    ),
-    child: Row(
-      children: [
-        const Icon(Icons.near_me_outlined, color: YuntaColors.actionPressed),
-        const SizedBox(width: 10),
-        Text('En tu zona', style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(width: 10),
-        _zonePill(context, '500 m'),
-        const Spacer(),
-        Icon(
-          Icons.circle,
-          size: 8,
-          color: locationSource == 'gps'
-              ? YuntaColors.success
-              : YuntaColors.muted,
+      child: InkWell(
+        onTap: locationWorking ? null : onLocationTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.near_me_outlined,
+                color: YuntaColors.actionPressed,
+              ),
+              const SizedBox(width: 10),
+              Text('En tu zona', style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(width: 10),
+              _zonePill(context, '500 m'),
+              const Spacer(),
+              Icon(
+                Icons.circle,
+                size: 8,
+                color: locationSource == 'gps'
+                    ? YuntaColors.success
+                    : YuntaColors.muted,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                locationSource == 'gps' ? 'GPS' : 'Mapa',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              const SizedBox(width: 4),
+              locationWorking
+                  ? const SizedBox.square(
+                      dimension: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: YuntaColors.ink,
+                    ),
+            ],
+          ),
         ),
-        const SizedBox(width: 5),
-        Text(
-          locationSource == 'gps' ? 'GPS' : 'Mapa',
-          style: Theme.of(context).textTheme.labelMedium,
-        ),
-      ],
+      ),
     ),
   );
 

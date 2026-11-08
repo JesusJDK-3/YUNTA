@@ -47,9 +47,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool get _canJoin =>
       _status == 'open' || (_group && _status == 'coordinating');
   bool get _canRate =>
-      _error == null &&
-      _status == 'resolved' &&
-      !_group &&
+      _post?['can_rate'] == true &&
       (_post?['provider_name'] as String?)?.trim().isNotEmpty == true &&
       _post?['my_rating'] == null;
 

@@ -49,6 +49,20 @@ class ProfileRepository {
       },
     );
   }
+
+  Future<void> updateLocation({
+    required LocationPoint location,
+    required String locationSource,
+  }) async {
+    await _client.rpc(
+      'update_my_location',
+      params: {
+        'p_latitude': location.latitude,
+        'p_longitude': location.longitude,
+        'p_location_source': locationSource,
+      },
+    );
+  }
 }
 
 class RegisteredProfile {

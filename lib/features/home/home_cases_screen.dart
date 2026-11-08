@@ -58,6 +58,7 @@ class _HomeCasesScreenState extends State<HomeCasesScreen> {
       final detail = await _repository.loadDetail(postId);
       final provider = detail['provider_name'] as String?;
       if (!mounted ||
+          detail['can_rate'] != true ||
           detail['status'] != 'resolved' ||
           detail['coordination_mode'] == 'group' ||
           detail['my_rating'] != null ||
