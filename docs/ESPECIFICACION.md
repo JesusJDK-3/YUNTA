@@ -33,7 +33,7 @@ El documento fuente incluye un ejemplo hipotético con radio de 1 km. La regla d
 ### Detalle y coordinación
 
 - Mostrar descripción, estado del caso y una acción según modalidad: Puedo ayudar o Unirme a la coordinación.
-- La modalidad individual permite que vecinos se ofrezcan; el autor acepta a una sola persona a la vez y abre un chat privado con ella. La base de datos garantiza que solo una persona quede aceptada a la vez. Puede reabrir el caso para buscar a otra persona.
+- La modalidad individual permite que vecinos se ofrezcan mientras el caso está abierto; el autor acepta a una sola persona y abre un chat privado con ella. Al aceptar, las demás ofertas pendientes se liberan. No se reciben ni aceptan nuevas ofertas mientras está en coordinación. Puede reabrir el caso para buscar a otra persona.
 - Al reabrir un caso individual, la base de datos libera la asignación anterior y devuelve el aviso a Abierto en la misma operación. La persona anterior pierde acceso al chat.
 - En modalidad grupal, quienes se unen participan en el mismo chat del caso, pueden repartirse tareas y confirmar recursos. Cada caso grupal tiene un chat separado.
 - Si necesitan compartir una dirección exacta, los vecinos pueden hacerlo durante la coordinación; el muro continúa mostrando solo una ubicación aproximada.
@@ -136,7 +136,7 @@ La referencia visual original es [Campsite en Refero](https://styles.refero.desi
 - **Registro:** seguir la referencia más reciente con fondo verde menta pálido, emblema circular Y, etiqueta de comunidad, tarjetas separadas para perfil y zona, prefijo +51 y notas de privacidad. Incluir GPS, ajuste del punto en el mapa, vista previa real del radio de 500 m, botón principal y tutorial breve. No sustituir la Y por un corazón ni solicitar o mostrar un nombre de barrio.
 - **Muro:** fondo verde menta; encabezado con marca y perfil, radio, saludo, selector horizontal Ayuda / Productos y servicios / Emergencias, aviso de emergencia solo cuando existan avisos reales, tarjetas tocables y botón flotante Publicar. La barra inferior solo lleva a las vistas que existen.
 - **Selección y publicación:** hoja inferior agrupada por categorías; formulario visual en secciones para título, descripción, modalidad y ubicación; botón Publicar fijo al pie. Mantener los tipos y acciones disponibles del flujo aprobado.
-- **Detalle:** jerarquía clara entre tipo, modalidad, título, autor, distancia, estado, participantes y descripción. Las acciones de coordinación corresponden al estado y a la relación del vecino con el aviso.
+- **Detalle:** seguir la referencia con tipo, fecha relativa real, título, autor, descripción y tarjetas de modalidad/participantes. Mantener solo la distancia aproximada y el estado real; no mostrar número de caso ficticio, duración no registrada, perímetro comunitario protegido, mapa ni zona de entrega. La foto sigue siendo opcional y las acciones corresponden al estado y a la relación del vecino con el aviso.
 - **Chat:** título ligado al aviso, indicador privado y modalidad/estado reales; historial ascendente con los mensajes antiguos arriba y los nuevos abajo; campo de envío anclado al pie.
 - **Valoración:** pantalla opcional después de resolver un caso individual para que quien recibió la ayuda califique al proveedor con 1–5 estrellas y comentario opcional. Se puede omitir y Supabase valida quién puede enviarla.
 - Las tarjetas, conteos, distancia, participantes, actividad y valoración siempre se derivan de datos reales; nunca se rellenan con la muestra visual de Stitch.

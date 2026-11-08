@@ -55,9 +55,12 @@ states. Type follows the reference scale through Android's native sans face.
 - The publish sheet stays grouped by category. Its editor uses separate cards
   for post content, coordination mode, and the real post location, with the
   submit action anchored at the bottom.
-- Detail separates the post identity, author, status and distance facts,
-  description, and eligible coordination actions. Eligible recipients can
-  open the optional rating flow after an individual case is resolved.
+- Detail follows the selected reference with the real post type, relative
+  publish time, title, author, description, mode, participants, approximate
+  distance, and live status. Keep photos optional and show only eligible
+  coordination actions; omit fake case IDs, unrecorded duration, protected
+  community perimeter, map, and delivery zone. Eligible recipients can open the
+  optional rating flow after an individual case is resolved.
 - Chat keeps the actual post title and status visible, sorts history oldest to
   newest, and keeps the message composer fixed below the scrollable history.
 - Rating asks for an optional 1–5 score and comment; eligibility and storage
