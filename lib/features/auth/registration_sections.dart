@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/location/location_point.dart';
 import '../../core/theme/yunta_theme.dart';
 import '../../shared/widgets/ambient_bubbles.dart';
+import '../../shared/widgets/neighborhood_illustration.dart';
 import 'registration_location_preview.dart';
 
 class RegistrationHero extends StatelessWidget {
@@ -85,15 +86,45 @@ class RegistrationHero extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 15),
-      Text(
-        '¡Hola, vecino!',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.headlineSmall,
-      ),
-      const SizedBox(height: 5),
-      const Text(
-        'Conecta con tu comunidad inmediata en un radio de 500 metros.',
-        textAlign: TextAlign.center,
+      LayoutBuilder(
+        builder: (context, constraints) {
+          final welcome = Column(
+            crossAxisAlignment: constraints.maxWidth < 310
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
+            children: [
+              Text(
+                '¡Hola, vecino!',
+                textAlign: constraints.maxWidth < 310
+                    ? TextAlign.center
+                    : TextAlign.start,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 5),
+              const Text(
+                'Conecta con tu comunidad inmediata en un radio de 500 metros.',
+                textAlign: TextAlign.start,
+              ),
+            ],
+          );
+          if (constraints.maxWidth < 310) {
+            return Column(
+              children: [
+                welcome,
+                const SizedBox(height: 8),
+                const NeighborhoodIllustration(),
+              ],
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(child: welcome),
+              const SizedBox(width: 8),
+              const NeighborhoodIllustration(),
+            ],
+          );
+        },
       ),
     ],
   );
