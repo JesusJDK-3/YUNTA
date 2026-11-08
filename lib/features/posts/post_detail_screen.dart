@@ -146,9 +146,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         builder: (_) => PostChatScreen(
           postId: widget.postId,
           title: _post?['title'] as String? ?? 'Coordinación vecinal',
-          readOnly: _status == 'resolved',
-          statusLabel: postStatusLabel(_status),
-          group: _group,
+          onOpenDetails: () => Navigator.of(context).pop(),
         ),
       ),
     );

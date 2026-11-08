@@ -44,6 +44,14 @@ class PostRepository {
         .toList(growable: false);
   }
 
+  Future<Map<String, dynamic>> loadChatContext(String postId) async {
+    final result = await _client.rpc(
+      'get_chat_context',
+      params: {'p_post_id': postId},
+    );
+    return Map<String, dynamic>.from(result as Map);
+  }
+
   Future<String> join(String id) async =>
       await _client.rpc('join_post', params: {'p_post_id': id}) as String;
 

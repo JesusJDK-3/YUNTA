@@ -63,8 +63,16 @@ states. Type follows the reference scale through Android's native sans face.
   open chat. Omit fake case IDs, unrecorded duration, protected community
   perimeter, map, and delivery zone. Eligible recipients can open the optional
   rating flow after an individual case is resolved.
-- Chat keeps the actual post title and status visible, sorts history oldest to
-  newest, and keeps the message composer fixed below the scrollable history.
+- Chat uses a participant header, an actual case-status strip, and a working
+  details action. Individual chats show the real counterpart name; group chats
+  show the real participant count. Never imply online presence, encryption, or
+  read receipts when those features are not implemented.
+- Chat history is chronological, labels incoming messages with the real sender
+  name, and keeps the composer fixed below the scrollable history. The author
+  can finish an active case from the status strip. Do not show a meeting-point
+  map unless a real agreed point is stored for that case. Reopening an
+  individual case starts a separate conversation so a new helper cannot see
+  the previous helper's private messages.
 - Rating asks for an optional 1–5 score and comment; eligibility and storage
   remain enforced by the existing Supabase RPC.
 

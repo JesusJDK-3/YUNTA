@@ -1,49 +1,128 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/theme/yunta_theme.dart';
+import 'post_chat_message_widgets.dart';
+import 'post_chat_widgets.dart';
+import 'post_repository.dart';
 
 class PostChatScreen extends StatefulWidget {
   const PostChatScreen({
     required this.postId,
     required this.title,
-    this.readOnly = false,
-    this.statusLabel = '',
-    this.group = false,
+    this.onOpenDetails,
     super.key,
   });
 
   final String postId;
   final String title;
-  final bool readOnly;
-  final String statusLabel;
-  final bool group;
+  final VoidCallback? onOpenDetails;
 
   @override
   State<PostChatScreen> createState() => _PostChatScreenState();
 }
 
-class _PostChatScreenState extends State<PostChatScreen> {
+class _PostChatScreenState extends State<PostChatScreen>
+    with WidgetsBindingObserver {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
-  late final Stream<List<Map<String, dynamic>>> _messages;
+  late final PostRepository _repository;
+  Map<String, dynamic>? _chatDetails;
+  late Stream<List<Map<String, dynamic>>> _messages;
+  String? _activeChatId;
+  final Set<String> _unknownSenders = {};
+  Timer? _contextTimer;
   String? _latestRenderedId;
+  int _contextRequestId = 0;
+  bool _loadingContext = true;
+  bool _contextUnavailable = false;
+  bool _refreshingContext = false;
   bool _sending = false;
+  bool _resolving = false;
 
   String get _userId => Supabase.instance.client.auth.currentUser?.id ?? '';
 
   @override
   void initState() {
     super.initState();
+    final client = Supabase.instance.client;
+    _repository = PostRepository(client);
+    WidgetsBinding.instance.addObserver(this);
+    _refreshChatContext();
+    _startContextPolling();
+  }
+
+  void _startContextPolling() {
+    _contextTimer?.cancel();
+    _contextTimer = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) => _refreshChatContext(),
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshChatContext(force: true);
+      _startContextPolling();
+    } else {
+      _contextTimer?.cancel();
+      _contextTimer = null;
+    }
+  }
+
+  Future<void> _refreshChatContext({bool force = false}) async {
+    if (_refreshingContext && !force) return;
+    _refreshingContext = true;
+    final requestId = ++_contextRequestId;
+    try {
+      final details = await _repository.loadChatContext(widget.postId);
+      if (!mounted || requestId != _contextRequestId) return;
+      final chatId = details['chat_id'] as String?;
+      if (chatId == null || chatId.isEmpty) {
+        throw StateError('La conversación no tiene un identificador válido.');
+      }
+      _subscribeMessages(chatId);
+      setState(() {
+        _chatDetails = details;
+        _loadingContext = false;
+        _contextUnavailable = false;
+      });
+    } catch (_) {
+      if (!mounted || requestId != _contextRequestId) return;
+      setState(() {
+        _loadingContext = false;
+        _contextUnavailable = true;
+      });
+    } finally {
+      if (requestId == _contextRequestId) _refreshingContext = false;
+    }
+  }
+
+  void _retryContext() {
+    setState(() => _loadingContext = true);
+    _refreshChatContext(force: true);
+  }
+
+  void _subscribeMessages(String chatId, {bool force = false}) {
+    if (_activeChatId == chatId && !force) return;
+    _activeChatId = chatId;
+    _latestRenderedId = null;
+    _unknownSenders.clear();
     _messages = Supabase.instance.client
         .from('messages')
         .stream(primaryKey: ['id'])
         .eq('post_id', widget.postId)
+        .eq('chat_id', chatId)
         .order('created_at', ascending: true);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _contextTimer?.cancel();
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -52,129 +131,170 @@ class _PostChatScreenState extends State<PostChatScreen> {
   Future<void> _send() async {
     final body = _controller.text.trim();
     final userId = _userId;
-    if (body.isEmpty || userId.isEmpty || _sending) return;
+    final chatId = _activeChatId;
+    if (body.isEmpty || userId.isEmpty || chatId == null || _sending) return;
     setState(() => _sending = true);
     try {
       await Supabase.instance.client.from('messages').insert({
         'post_id': widget.postId,
+        'chat_id': chatId,
         'sender_id': userId,
         'body': body,
       });
       _controller.clear();
     } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No se pudo enviar. Revisa tu conexión e inténtalo.'),
-          ),
-        );
-      }
+      if (mounted) _showMessage('No se pudo enviar. Revisa tu conexión.');
     } finally {
       if (mounted) setState(() => _sending = false);
     }
   }
 
+  Future<void> _finishCase() async {
+    if (_resolving) return;
+    setState(() => _resolving = true);
+    try {
+      await _repository.resolve(widget.postId);
+      await _refreshChatContext(force: true);
+      if (!mounted) return;
+      _showMessage('Caso finalizado. El chat queda disponible para consulta.');
+    } catch (_) {
+      if (mounted) {
+        _showMessage('No se pudo finalizar el caso. Inténtalo otra vez.');
+      }
+    } finally {
+      if (mounted) setState(() => _resolving = false);
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: Text(widget.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-    ),
-    body: Column(
+  Widget build(BuildContext context) {
+    final details = _chatDetails;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Chat de coordinación', maxLines: 1)),
+      body: _loadingContext
+          ? const Center(child: CircularProgressIndicator())
+          : _contextUnavailable || details == null
+          ? ChatLoadState(
+              message: 'No se pudo verificar el acceso y estado del caso.',
+              onRetry: _retryContext,
+            )
+          : _buildConversation(details),
+    );
+  }
+
+  Widget _buildConversation(Map<String, dynamic> details) {
+    final status = details['status'] as String? ?? '';
+    final group = details['coordination_mode'] == 'group';
+    final resolved = status == 'resolved';
+    final canFinish =
+        details['is_author'] == true && status == 'coordinating' && !resolved;
+    return Column(
       children: [
-        _ChatCaseHeader(
-          statusLabel: widget.statusLabel,
-          group: widget.group,
-          readOnly: widget.readOnly,
+        ChatParticipantHeader(
+          name: _peerName(details, group),
+          subtitle: _participantSubtitle(details, group),
+          group: group,
+          onOpenDetails: widget.onOpenDetails,
         ),
+        ChatCoordinationBanner(
+          title: details['title'] as String? ?? widget.title,
+          status: status,
+          group: group,
+          canFinish: canFinish,
+          resolving: _resolving,
+          onFinish: _finishCase,
+        ),
+        const ChatPrivacyNote(),
         Expanded(
           child: StreamBuilder<List<Map<String, dynamic>>>(
             stream: _messages,
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return const Center(
-                  child: Text('No se pudo cargar el chat. Actualiza el aviso.'),
+            builder: (context, messageSnapshot) {
+              if (messageSnapshot.hasError) {
+                return ChatLoadState(
+                  message: 'No se pudieron cargar los mensajes.',
+                  onRetry: () {
+                    final chatId = _activeChatId;
+                    if (chatId != null) {
+                      setState(() => _subscribeMessages(chatId, force: true));
+                    }
+                  },
                 );
               }
-              if (!snapshot.hasData) {
+              if (!messageSnapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
-              final rows = snapshot.data!;
-              if (rows.isNotEmpty) _scrollToNewest(rows);
-              if (rows.isEmpty) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(28),
-                    child: Text(
-                      'Este chat está listo. Coordinen aquí sin compartir '
-                      'datos privados en el muro.',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                );
+              final messages = messageSnapshot.data!;
+              final names = _participantNames(details);
+              final unknownSenders = messages
+                  .map((message) => message['sender_id'] as String? ?? '')
+                  .where(
+                    (sender) =>
+                        sender.isNotEmpty &&
+                        sender != _userId &&
+                        !names.containsKey(sender) &&
+                        !_unknownSenders.contains(sender),
+                  )
+                  .toSet();
+              if (unknownSenders.isNotEmpty) {
+                _unknownSenders.addAll(unknownSenders);
+                _refreshChatContext();
               }
-              return ListView.builder(
+              if (messages.isNotEmpty) _scrollToNewest(messages);
+              return ChatTimelineList(
+                messages: messages,
+                userId: _userId,
+                participantNames: names,
                 controller: _scrollController,
-                padding: const EdgeInsets.all(16),
-                itemCount: rows.length,
-                itemBuilder: (context, index) {
-                  final message = rows[index];
-                  return _MessageBubble(
-                    body: message['body'] as String? ?? '',
-                    mine: message['sender_id'] == _userId,
-                    time: _messageTime(message['created_at'] as String?),
-                  );
-                },
               );
             },
           ),
         ),
-        if (widget.readOnly)
-          const SafeArea(
-            top: false,
-            child: Padding(
-              padding: EdgeInsets.all(14),
-              child: Text('Caso resuelto · chat disponible para consulta'),
-            ),
-          )
+        if (resolved)
+          const ChatReadOnlyNote()
         else
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      textCapitalization: TextCapitalization.sentences,
-                      maxLength: 2000,
-                      minLines: 1,
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        hintText: 'Escribe un mensaje…',
-                        counterText: '',
-                      ),
-                      onSubmitted: (_) => _send(),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    onPressed: _sending ? null : _send,
-                    tooltip: 'Enviar mensaje',
-                    icon: _sending
-                        ? const SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.send_rounded),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _Composer(controller: _controller, sending: _sending, onSend: _send),
       ],
-    ),
-  );
+    );
+  }
+
+  String _peerName(Map<String, dynamic> details, bool group) {
+    if (group) return 'Coordinación vecinal';
+    final value = details['peer_name'] as String?;
+    if (value?.trim().isNotEmpty == true) return value!;
+    return details['author_name'] as String? ?? 'Chat del caso';
+  }
+
+  String _participantSubtitle(Map<String, dynamic> details, bool group) {
+    final distance = (details['distance_m'] as num?)?.round();
+    final members = (details['member_count'] as num?)?.toInt() ?? 0;
+    if (group) {
+      final count = members + 1;
+      final people = '$count ${count == 1 ? 'participante' : 'participantes'}';
+      return distance == null ? people : '$people · aviso a $distance m aprox.';
+    }
+    return distance == null
+        ? 'Chat individual del caso'
+        : 'A $distance m del aviso · distancia aproximada';
+  }
+
+  Map<String, String> _participantNames(Map<String, dynamic> details) {
+    final rows = details['participants'] as List<dynamic>? ?? const [];
+    final names = <String, String>{};
+    for (final row in rows) {
+      if (row is! Map) continue;
+      final id = row['user_id']?.toString();
+      final name = row['display_name']?.toString();
+      if (id != null && name != null && name.trim().isNotEmpty) {
+        names[id] = name;
+      }
+    }
+    return names;
+  }
 
   void _scrollToNewest(List<Map<String, dynamic>> rows) {
     final newestId = rows.last['id'] as String?;
@@ -190,116 +310,73 @@ class _PostChatScreenState extends State<PostChatScreen> {
       if (!_scrollController.hasClients) return;
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
       );
     });
   }
-
-  String? _messageTime(String? raw) {
-    final sentAt = DateTime.tryParse(raw ?? '')?.toLocal();
-    if (sentAt == null) return null;
-    final hour = sentAt.hour.toString().padLeft(2, '0');
-    final minute = sentAt.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
 }
 
-class _ChatCaseHeader extends StatelessWidget {
-  const _ChatCaseHeader({
-    required this.statusLabel,
-    required this.group,
-    required this.readOnly,
+class _Composer extends StatelessWidget {
+  const _Composer({
+    required this.controller,
+    required this.sending,
+    required this.onSend,
   });
 
-  final String statusLabel;
-  final bool group;
-  final bool readOnly;
+  final TextEditingController controller;
+  final bool sending;
+  final VoidCallback onSend;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-    decoration: BoxDecoration(
-      color: readOnly ? YuntaColors.surfaceMint : YuntaColors.surfaceBlue,
-      borderRadius: BorderRadius.circular(17),
-    ),
-    child: Row(
-      children: [
-        Icon(group ? Icons.groups_outlined : Icons.lock_outline_rounded,
-            color: YuntaColors.primary, size: 21),
-        const SizedBox(width: 9),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                statusLabel.isEmpty ? 'Chat privado de este aviso' : statusLabel,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              if (statusLabel.isNotEmpty)
-                Text(
-                  'Chat privado de este aviso',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-          decoration: BoxDecoration(
-            color: YuntaColors.surfaceWhite,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Text(group ? 'Grupal' : 'Individual'),
-        ),
-      ],
-    ),
-  );
-}
-
-class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.body, required this.mine, this.time});
-
-  final String body;
-  final bool mine;
-  final String? time;
-
-  @override
-  Widget build(BuildContext context) => Align(
-    alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+  Widget build(BuildContext context) => SafeArea(
+    top: false,
     child: Container(
-      constraints: const BoxConstraints(maxWidth: 320),
-      margin: const EdgeInsets.only(bottom: 9),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: mine ? YuntaColors.action : YuntaColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(17),
-        border: mine
-            ? null
-            : Border.all(color: YuntaColors.outlineSoft.withValues(alpha: .55)),
+      padding: const EdgeInsets.fromLTRB(14, 9, 14, 10),
+      decoration: const BoxDecoration(
+        color: YuntaColors.surfaceWhite,
+        border: Border(top: BorderSide(color: YuntaColors.outlineSoft)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Row(
         children: [
-          Text(
-            body,
-            style: TextStyle(
-              color: mine ? YuntaColors.inkStrong : YuntaColors.ink,
+          Expanded(
+            child: TextField(
+              controller: controller,
+              textCapitalization: TextCapitalization.sentences,
+              textInputAction: TextInputAction.send,
+              maxLength: 2000,
+              minLines: 1,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: 'Escribe un mensaje…',
+                counterText: '',
+                filled: true,
+                fillColor: YuntaColors.surfaceBlue,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 13,
+                ),
+              ),
+              onSubmitted: (_) => onSend(),
             ),
           ),
-          if (time != null) ...[
-            const SizedBox(height: 3),
-            Text(
-              time!,
-              style: TextStyle(
-                color: mine ? YuntaColors.inkStrong : YuntaColors.muted,
-                fontSize: 10,
-              ),
+          const SizedBox(width: 8),
+          SizedBox.square(
+            dimension: 50,
+            child: IconButton.filled(
+              onPressed: sending ? null : onSend,
+              tooltip: 'Enviar mensaje',
+              icon: sending
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.send_rounded),
             ),
-          ],
+          ),
         ],
       ),
     ),

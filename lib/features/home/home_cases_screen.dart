@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/yunta_theme.dart';
 import '../posts/post_catalog.dart';
 import '../posts/post_chat_screen.dart';
+import '../posts/post_detail_screen.dart';
 import '../posts/post_repository.dart';
 
 class HomeCasesScreen extends StatefulWidget {
@@ -36,9 +37,14 @@ class _HomeCasesScreenState extends State<HomeCasesScreen> {
         builder: (_) => PostChatScreen(
           postId: item['post_id'] as String,
           title: item['title'] as String,
-          readOnly: item['status'] == 'resolved',
-          statusLabel: postStatusLabel(item['status'] as String? ?? ''),
-          group: item['coordination_mode'] == 'group',
+          onOpenDetails: () {
+            Navigator.of(context).push<void>(
+              MaterialPageRoute(
+                builder: (_) =>
+                    PostDetailScreen(postId: item['post_id'] as String),
+              ),
+            );
+          },
         ),
       ),
     );
