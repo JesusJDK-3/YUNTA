@@ -34,6 +34,7 @@ El documento fuente incluye un ejemplo hipotético con radio de 1 km. La regla d
 
 - Mostrar descripción, estado del caso y una acción según modalidad: Puedo ayudar o Unirme a la coordinación.
 - La modalidad individual permite que vecinos se ofrezcan mientras el caso está abierto; el autor acepta a una sola persona y abre un chat privado con ella. Al aceptar, las demás ofertas pendientes se liberan. No se reciben ni aceptan nuevas ofertas mientras está en coordinación. Puede reabrir el caso para buscar a otra persona.
+- En la ficha del autor, las postulaciones aparecen justo después del resumen. Toda la tarjeta del vecino indica que se puede tocar para aceptar el apoyo y abrir el chat.
 - Al reabrir un caso individual, la base de datos libera la asignación anterior y devuelve el aviso a Abierto en la misma operación. La persona anterior pierde acceso al chat.
 - En modalidad grupal, quienes se unen participan en el mismo chat del caso, pueden repartirse tareas y confirmar recursos. Cada caso grupal tiene un chat separado.
 - Si necesitan compartir una dirección exacta, los vecinos pueden hacerlo durante la coordinación; el muro continúa mostrando solo una ubicación aproximada.

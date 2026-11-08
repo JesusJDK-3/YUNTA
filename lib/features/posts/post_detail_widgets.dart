@@ -286,16 +286,80 @@ class PostOfferTile extends StatelessWidget {
   final VoidCallback? onAccept;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: ListTile(
-      leading: const CircleAvatar(child: Icon(Icons.person_outline)),
-      title: Text(offer['display_name'] as String? ?? 'Vecino'),
-      subtitle: const Text('Quiere participar en este caso'),
-      trailing: IconButton(
-        tooltip: 'Aceptar y abrir chat',
-        onPressed: onAccept,
-        icon: const Icon(Icons.check_circle_outline),
+  Widget build(BuildContext context) {
+    final name = offer['display_name'] as String? ?? 'Vecino';
+    return Card(
+      color: YuntaColors.surfaceWhite,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: InkWell(
+        onTap: onAccept,
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: YuntaColors.surfaceMint,
+                child: Text(
+                  name.trim().isEmpty ? '?' : name.characters.first,
+                  style: const TextStyle(
+                    color: YuntaColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Toca para aceptar y abrir el chat',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                constraints: const BoxConstraints(minHeight: 44),
+                padding: const EdgeInsets.symmetric(horizontal: 11),
+                decoration: BoxDecoration(
+                  color: YuntaColors.surfaceMint,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.check_circle_outline_rounded,
+                      color: YuntaColors.primary,
+                      size: 19,
+                    ),
+                    SizedBox(width: 5),
+                    Text(
+                      'Aceptar',
+                      style: TextStyle(
+                        color: YuntaColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

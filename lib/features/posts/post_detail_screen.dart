@@ -5,6 +5,7 @@ import '../../core/theme/yunta_theme.dart';
 import 'post_catalog.dart';
 import 'post_chat_screen.dart';
 import 'post_detail_meta_widgets.dart';
+import 'post_detail_offer_section.dart';
 import 'post_detail_widgets.dart';
 import 'post_edit_dialog.dart';
 import 'post_interaction_actions.dart';
@@ -307,6 +308,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           publishedLabel: postPublishedAgo(post['created_at']),
           emergency: emergency,
         ),
+        if (_isAuthor && offers.isNotEmpty && _canAcceptOffers) ...[
+          const SizedBox(height: 18),
+          PostDetailOfferSection(
+            offers: offers,
+            working: _working,
+            onAccept: _accept,
+          ),
+        ],
         if (post['image_url'] is String &&
             (post['image_url'] as String).isNotEmpty) ...[
           const SizedBox(height: 16),
@@ -344,20 +353,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             provider: post['provider_name'] as String,
             onTap: _working ? null : _openRating,
           ),
-        ],
-        if (_isAuthor && offers.isNotEmpty && _canAcceptOffers) ...[
-          const SizedBox(height: 26),
-          Text(
-            'Vecinos que quieren ayudar',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          for (final offer in offers)
-            PostOfferTile(
-              offer: offer,
-              onAccept: _working
-                  ? null
-                  : () => _accept(offer['user_id'] as String),
-            ),
         ],
         if (post['category'] == 'products_services' && active) ...[
           const SizedBox(height: 18),
