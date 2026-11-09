@@ -56,7 +56,7 @@ class _PostRatingScreenState extends State<PostRatingScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Valora la ayuda')),
+    appBar: AppBar(title: const Text('Califica a quien te ayudó')),
     bottomNavigationBar: SafeArea(
       top: false,
       child: Padding(
@@ -104,13 +104,14 @@ class _PostRatingScreenState extends State<PostRatingScreen> {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      '¿Cómo fue la ayuda?',
+                      'Califica a quien te ayudó',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 7),
                     Text(
-                      'Valora tu experiencia con ${widget.providerName}.',
+                      'Cuéntanos cómo fue la ayuda de '
+                      '${widget.providerName}.',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),

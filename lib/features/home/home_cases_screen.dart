@@ -7,6 +7,7 @@ import '../posts/post_chat_screen.dart';
 import '../posts/post_detail_screen.dart';
 import '../posts/post_repository.dart';
 import '../posts/post_rating_screen.dart';
+import '../posts/post_rating_eligibility.dart';
 
 class HomeCasesScreen extends StatefulWidget {
   const HomeCasesScreen({super.key});
@@ -57,8 +58,10 @@ class _HomeCasesScreenState extends State<HomeCasesScreen> {
     try {
       final detail = await _repository.loadDetail(postId);
       final provider = detail['provider_name'] as String?;
+      final currentUserId = Supabase.instance.client.auth.currentUser?.id;
       if (!mounted ||
           detail['can_rate'] != true ||
+          !isExpectedPostRater(detail, currentUserId ?? '') ||
           detail['status'] != 'resolved' ||
           detail['coordination_mode'] == 'group' ||
           detail['my_rating'] != null ||

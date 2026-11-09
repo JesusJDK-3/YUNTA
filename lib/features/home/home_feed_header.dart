@@ -30,7 +30,7 @@ class HomeFeedHeader extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Expanded(child: AyniWordmark(compact: true)),
+            const Expanded(child: _AyniHomeBrand()),
             _smallRadiusPill(),
           ],
         ),
@@ -168,5 +168,25 @@ class HomeFeedHeader extends StatelessWidget {
   static const _avatarText = TextStyle(
     color: YuntaColors.ink,
     fontWeight: FontWeight.w800,
+  );
+}
+
+class _AyniHomeBrand extends StatelessWidget {
+  const _AyniHomeBrand();
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Image.asset(
+        'assets/ayni-neighbors.png',
+        width: 42,
+        height: 42,
+        fit: BoxFit.contain,
+        semanticLabel: 'Vecinos brindando apoyo mutuo',
+      ),
+      const SizedBox(width: 6),
+      const Flexible(child: AyniWordmark(compact: true)),
+    ],
   );
 }

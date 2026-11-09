@@ -14,6 +14,7 @@ import 'post_interaction_actions.dart';
 import 'post_image_preview.dart';
 import 'post_repository.dart';
 import 'post_rating_navigation.dart';
+import 'post_rating_eligibility.dart';
 import '../profile/ayni_profile_sheet.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -48,6 +49,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       _status == 'open' || (_group && _status == 'coordinating');
   bool get _canRate =>
       _post?['can_rate'] == true &&
+      isExpectedPostRater(_post!, _userId) &&
       (_post?['provider_name'] as String?)?.trim().isNotEmpty == true &&
       _post?['my_rating'] == null;
 

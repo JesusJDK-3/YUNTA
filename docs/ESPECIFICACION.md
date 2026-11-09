@@ -38,7 +38,7 @@ El documento fuente incluye un ejemplo hipotético con radio de 1 km. La regla d
 - Al reabrir un caso individual, la base de datos libera la asignación anterior y devuelve el aviso a Abierto en la misma operación. La persona anterior pierde acceso al chat.
 - En modalidad grupal, quienes se unen participan en el mismo chat del caso, pueden repartirse tareas y confirmar recursos. Cada caso grupal tiene un chat separado.
 - Si necesitan compartir una dirección exacta, los vecinos pueden hacerlo durante la coordinación; el muro continúa mostrando solo una ubicación aproximada.
-- El autor puede editar o retirar su anuncio de producto o servicio. Al resolver un caso individual, quien recibió la ayuda puede dejar una valoración opcional al proveedor; normalmente será el autor en una solicitud de ayuda, pero no necesariamente en un anuncio de servicio.
+- El autor puede editar o retirar su anuncio de producto o servicio. Al resolver una solicitud individual de ayuda o emergencia, el autor califica al vecino aceptado que brindó apoyo; el ayudante no califica al autor. En un producto o servicio, quien recibió la atención califica al proveedor del anuncio.
 
 ## Modalidades y estados
 
@@ -147,4 +147,4 @@ La referencia visual original es [Campsite en Refero](https://styles.refero.desi
 - La marca pública pasa de Yunta a AYNI. Android muestra el logotipo manuscrito AYNI con la espiral andina en el inicio, registro, encabezado e icono de la aplicación. Los identificadores técnicos existentes se conservan.
 - Al iniciar, se muestra una precarga AYNI de al menos 3 segundos; si Supabase tarda más, permanece visible hasta tener el resultado.
 - El perfil muestra debajo del nombre el promedio y la cantidad reales de valoraciones recibidas. La ficha propia y la de otro vecino solo muestran el nombre y esa reputación; el detalle entrega este resumen al vecino que ya puede ver el aviso. No exponen teléfono ni ubicación exacta.
-- Al finalizar un caso individual, la persona elegible que recibió la ayuda puede valorar al proveedor inmediatamente desde el detalle o el chat. La valoración sigue siendo opcional y se puede omitir.
+- Al finalizar un caso individual, la persona elegible puede valorar opcionalmente a su contraparte desde el detalle o el chat. En solicitudes de ayuda o apoyo urgente, califica el autor; en productos o servicios, califica quien recibió la atención.
